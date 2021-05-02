@@ -22,12 +22,10 @@ logger.addHandler(stream_handler)
 
 
 class FileEdit:
-    """ this class is to edit file (Dynamic)"""
+    """this class is to edit file (Dynamic)"""
+
     @staticmethod
-    def append(self, file, data):
-        try:
-            with open(file, "a") as a_file:
-                a_file.writelines(f"+@{data}:x:::::\n")
-            logger.info(f"'{data}' --> appended to the file {file}")
-        except IOError:
-            logger.error("File Error Occurred")
+    def append(file, data):
+        with open(file, "a") as a_file:
+            a_file.writelines(f"+@{data}:x:::::\n")
+        logger.info(f"'{data}' --> appended to the file {file}")

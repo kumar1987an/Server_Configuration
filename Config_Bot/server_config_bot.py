@@ -33,7 +33,7 @@ class Execute_bot:
         self.user = user
 
     def start(self):
-        """ A Bot to perform server configuration with json input """
+        """A Bot to perform server configuration with json input"""
 
         path: str = f"/dummyfs/{self.user}"
 
@@ -53,9 +53,9 @@ class Execute_bot:
             ) as json_file:  # opening json file to read its contents and save into a variable
                 json_loader = json.loads(json_file.read())
 
-                for i in range(len(json_loader)):
-                    if json_loader[i]["Server"] == os.uname().nodename:
-                        netgroup_name = json_loader[i]["Netgroup"]
+            for i in range(len(json_loader)):
+                if json_loader[i]["Server"] == os.uname().nodename:
+                    netgroup_name = json_loader[i]["Netgroup"]
 
             Filecopy.cp("/etc/passwd")
             Filecopy.cp("/etc/nsswitch.conf")
