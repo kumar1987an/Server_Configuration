@@ -40,5 +40,3 @@
     "python.pythonPath": "c:\\kdata\\myPYTHON\\python37venv\\Scripts\\python.exe",
     "workbench.startupEditor": "none"
 }
-
-predawn; ayu; code runner
