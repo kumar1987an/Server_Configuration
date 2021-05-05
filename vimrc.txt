@@ -1,22 +1,3 @@
-login as: pybox
-pybox@192.168.1.8's password:
-Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.8.0-45-generic x86_64)
-
- * Documentation:  https://help.ubuntu.com
- * Management:     https://landscape.canonical.com
- * Support:        https://ubuntu.com/advantage
-
-19 updates can be installed immediately.
-15 of these updates are security updates.
-To see these additional updates run: apt list --upgradable
-
-Your Hardware Enablement Stack (HWE) is supported until April 2025.
-Last login: Tue Mar 23 00:52:25 2021 from 192.168.1.2
-pybox@CodeNamepy:~$
-pybox@CodeNamepy:~$
-pybox@CodeNamepy:~$
-pybox@CodeNamepy:~$ cd
-pybox@CodeNamepy:~$ cat .vimrc
 "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 "                                                                              "
 "                       __   _ _ _ __ ___  _ __ ___                            "
