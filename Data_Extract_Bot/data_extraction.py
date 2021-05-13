@@ -21,7 +21,7 @@ logger.addHandler(stream_handler)
 class DataExtract:
     @staticmethod
     def load_file(args):
-        """ Excel Data Extractor """
+        """Excel Data Extractor"""
 
         ps1 = run("df -h".split(), stdout=PIPE)
         ps2 = run("grep -i dummy".split(), input=ps1.stdout, stdout=PIPE)
