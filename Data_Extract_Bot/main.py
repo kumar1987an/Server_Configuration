@@ -14,7 +14,7 @@ logger.addHandler(stream_handler)
 
 
 def main():
-    """ Argument parser """
+    """Argument parser"""
     parser = ArgumentParser()
     help_doc = """Adhoc requests are fs, ng, ug, sw, cr, pb and all -->
                   fs = filesystems, ng = netgroups,
