@@ -24,7 +24,7 @@ logger.addHandler(stream_handler)
 
 
 def main():
-    """ Argument parser """
+    """Argument parser"""
     parser = ArgumentParser()
     parser.add_argument(
         "--user",

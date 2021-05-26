@@ -9,6 +9,7 @@
 """
 
 import logging
+import shutil
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -29,3 +30,7 @@ class FileEdit:
         with open(file, "a") as a_file:
             a_file.writelines(f"+@{data}:x:::::\n")
         logger.info(f"'{data}' --> appended to the file {file}")
+
+    @staticmethod
+    def edit_mode():
+        pass
