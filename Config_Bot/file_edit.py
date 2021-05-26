@@ -9,7 +9,6 @@
 """
 
 import logging
-import shutil
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
