@@ -4,7 +4,6 @@ from shutil import rmtree
 import logging
 from subprocess import PIPE, run
 import pandas as pd
-from argparse import ArgumentParser
 
 
 logger = logging.getLogger(__name__)
@@ -43,50 +42,50 @@ class DataExtract:
                 os.makedirs(path)
 
             # Loading main Excel File
-            file_IN = pd.ExcelFile(
+            file_in = pd.ExcelFile(
                 os.path.join("/kmrnr8501/server_config", "config_input.xlsx")
             )
 
             # Extractor Loading
             if args.adhoc in ["FS", "fs"]:
-                output = file_IN.parse("filesystems")
+                output = file_in.parse("filesystems")
                 with open(os.path.join(path, "filesystems.json"), "w") as f:
                     f.writelines(output.to_json(orient="records"))
                 logger.info(f"filesystems.json Created: Success")
 
             elif args.adhoc in ["NG", "ng"]:
-                output = file_IN.parse("netgroups")
+                output = file_in.parse("netgroups")
                 with open(os.path.join(path, "netgroups.json"), "w") as f:
                     f.writelines(output.to_json(orient="records"))
                 logger.info(f"netgroups.json Created: Success")
 
             elif args.adhoc in ["PK", "pk"]:
-                output = file_IN.parse("pubkeys")
+                output = file_in.parse("pubkeys")
                 with open(os.path.join(path, "pubkeys.json"), "w") as f:
                     f.writelines(output.to_json(orient="records"))
                 logger.info(f"pubkeys.json Created: Success")
 
             elif args.adhoc in ["UG", "ug"]:
-                output = file_IN.parse("users_groups")
+                output = file_in.parse("users_groups")
                 with open(os.path.join(path, "users_groups.json"), "w") as f:
                     f.writelines(output.to_json(orient="records"))
                 logger.info(f"users_groups.json Created: Success")
 
             elif args.adhoc in ["SW", "sw"]:
-                output = file_IN.parse("softwares")
+                output = file_in.parse("softwares")
                 with open(os.path.join(path, "softwares.json"), "w") as f:
                     f.writelines(output.to_json(orient="records"))
                 logger.info(f"softwares.json Created: Success")
 
             elif args.adhoc in ["CR", "cr"]:
-                output = file_IN.parse("cronusers")
+                output = file_in.parse("cronusers")
                 with open(os.path.join(path, "cronusers.json"), "w") as f:
                     f.writelines(output.to_json(orient="records"))
                 logger.info(f"cronusers.json Created: Success")
 
             elif args.adhoc in ["ALL", "all"]:
-                for i in file_IN.sheet_names:
-                    output = file_IN.parse(i)
+                for i in file_in.sheet_names:
+                    output = file_in.parse(i)
                     with open(os.path.join(path, i + ".json"), "w") as f:
                         f.writelines(output.to_json(orient="records"))
                     logger.info(f"{i}.json Created: Success")
