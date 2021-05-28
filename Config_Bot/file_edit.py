@@ -28,8 +28,8 @@ class FileEdit:
     def append(file, data):
         with open(file, "a") as a_file:
             a_file.writelines(f"+@{data}:x:::::\n")
-        logger.info(f"'{data}' --> appended to the file {file}")
+        logger.info("%s --> appended to the file %s" % (data, file))
 
     @staticmethod
     def edit_mode():
-        pass
+        return " "
