@@ -25,11 +25,19 @@ class FileEdit:
     """this class is to edit file (Dynamic)"""
 
     @staticmethod
-    def append(file, data):
+    def append_mode(file, data):
         with open(file, "a") as a_file:
             a_file.writelines(f"+@{data}:x:::::\n")
-        logger.info("%s --> appended to the file %s" % (data, file))
+        logger.info("'%s' --> appended to the file %s" % (data, file))
 
     @staticmethod
-    def edit_mode():
+    def find_replace():
+        return " "
+
+    @staticmethod
+    def find_remove():
+        return " "
+
+    @staticmethod
+    def append_anywhere_mode():
         return " "

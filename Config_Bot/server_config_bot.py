@@ -62,8 +62,8 @@ class Execute_bot:
             Filecopy.cp("/etc/group")
             Filecopy.cp("/etc/shadow")
 
-            FileEdit.append("/etc/passwd", netgroup_name)
-            FileEdit.append("/etc/group", "+:::")
+            FileEdit.append_mode("/etc/passwd", netgroup_name)
+            FileEdit.append_mode("/etc/group", "+:::")
 
         # This segment of code is for pubkeys related executions on requested server
 
