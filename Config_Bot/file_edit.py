@@ -9,6 +9,7 @@
 """
 
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -31,8 +32,10 @@ class FileEdit:
         logger.info("'%s' --> appended to the file %s" % (data, file))
 
     @staticmethod
-    def find_replace():
-        return " "
+    def find_replace(file, search_pattern, replace_pattern):
+        with open(file, "r") as r_file, open(file, "w") as w_file:
+            content = r_file.read()
+            # w_file.write()
 
     @staticmethod
     def find_remove():
