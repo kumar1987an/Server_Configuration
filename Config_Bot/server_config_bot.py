@@ -58,14 +58,26 @@ class Execute_bot:
                     netgroup_name = json_loader[i]["Netgroup"]
 
             # For Copying required file for Netgroup change related operations
-            Filecopy.cp("/etc/passwd")
-            Filecopy.cp("/etc/nsswitch.conf")
-            Filecopy.cp("/etc/group")
-            Filecopy.cp("/etc/shadow")
+            Filecopy.backup("/etc/passwd")
+            Filecopy.backup("/etc/nsswitch.conf")
+            Filecopy.backup("/etc/group")
+            Filecopy.backup("/etc/shadow")
 
             # Delicate file edit based on actual configuration requirement
             FileEdit.append_mode("/etc/passwd", netgroup_name)
             FileEdit.append_mode("/etc/group", "+:::")
+
+            search_patterns = ["passwd:.+", "group:.+", "shadow:.+", "netgroup:.+"]
+            replace_patterns = [
+                "passwd:    files sssd",
+                "group:    files nis sssd",
+                "shadow:    compat",
+                "netgroup:    files nis nisplus",
+            ]
+            FileEdit.find_replace(
+                "/tmp/nsswitch.conf", search_patterns, replace_patterns
+            )
+            Filecopy.copy_file("/tmp/nsswitch.conf", "/etc/nsswitch_conf")
 
         # This segment of code is for pubkeys related executions on requested server
 

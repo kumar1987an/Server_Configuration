@@ -69,6 +69,7 @@ class FileEdit:
 
                 with open(file, "w") as out_file:
                     out_file.write(output_content)
+
             else:
                 pass  # Need to add codes if further files to be edited based on situation
 

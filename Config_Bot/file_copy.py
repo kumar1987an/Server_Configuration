@@ -26,7 +26,8 @@ logger.addHandler(stream_handler)
 
 class Filecopy:
     @staticmethod
-    def cp(file):
+    def backup(file):
+        """Function definiton: To backup of a file"""
 
         current_time: str = dt.now().strftime("%d-%m-%y_%H:%M:%S")
 
@@ -34,6 +35,18 @@ class Filecopy:
 
         Popen(f"sudo cp -ip {file} {new_file_name}".split(), stdout=PIPE, stderr=PIPE)
 
-        Popen(f"cp {file} /tmp/{file}".split(), stdout=PIPE, stderr=PIPE)
+        Popen(
+            f"cp {file} /tmp/{os.path.basename(file)}".split(), stdout=PIPE, stderr=PIPE
+        )
 
         logger.info(f"New backup file created -> {new_file_name}")
+        logger.info(f"Secondar backup file created -> /tmp/{os.path.basename(file)}")
+
+    @staticmethod
+    def copy_file(source_file, target_file):
+        """Function definiton: To copy a file"""
+
+        command = f"cp -ip {source_file} {target_file}".split()
+        Popen(command, stdout=PIPE, stderr=PIPE)
+
+        logger.info(f"{source_file} has been copied to {target_file}")
