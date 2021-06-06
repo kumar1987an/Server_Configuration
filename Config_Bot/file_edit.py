@@ -10,6 +10,7 @@
 
 import logging
 import re
+import os
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -27,11 +28,13 @@ class FileEdit:
 
     @staticmethod
     def append_mode(file, data):
-        if file == "/etc/passwd":
+        """Function definition: for appending data to a file"""
+
+        if os.path.basename(file) == "passwd":
             with open(file, "a") as a_file:
                 a_file.writelines(f"+@{data}:x:::::\n")
 
-        elif file == "/etc/group":
+        elif os.path.basename(file) == "group":
             with open(file, "a") as a_file:
                 a_file.writelines("+:::\n")
 
@@ -43,7 +46,31 @@ class FileEdit:
 
     @staticmethod
     def find_replace(file, search_pattern, replace_pattern):
-        pass
+        """Function definition: for find and replace data to a file"""
+
+        for s_pattern, r_pattern in zip(search_pattern, replace_pattern):
+
+            if os.path.basename(file) == "nsswitch.conf":
+
+                with open(file, "r") as in_file:
+                    content = in_file.read()
+
+                if s_pattern == "passwd:.+":
+                    output_content = re.sub(s_pattern, r_pattern, content)
+
+                elif s_pattern == "group:.+":
+                    output_content = re.sub(s_pattern, r_pattern, content)
+
+                elif s_pattern == "shadow:.+":
+                    output_content = re.sub(s_pattern, r_pattern, content, count=1)
+
+                else:
+                    output_content = re.sub(s_pattern, r_pattern, content)
+
+                with open(file, "w") as out_file:
+                    out_file.write(output_content)
+            else:
+                pass  # Need to add codes if further files to be edited based on situation
 
     @staticmethod
     def find_remove():

@@ -57,11 +57,13 @@ class Execute_bot:
                 if json_loader[i]["Server"] == os.uname().nodename:
                     netgroup_name = json_loader[i]["Netgroup"]
 
+            # For Copying required file for Netgroup change related operations
             Filecopy.cp("/etc/passwd")
             Filecopy.cp("/etc/nsswitch.conf")
             Filecopy.cp("/etc/group")
             Filecopy.cp("/etc/shadow")
 
+            # Delicate file edit based on actual configuration requirement
             FileEdit.append_mode("/etc/passwd", netgroup_name)
             FileEdit.append_mode("/etc/group", "+:::")
 

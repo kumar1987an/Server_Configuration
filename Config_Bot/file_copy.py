@@ -32,6 +32,8 @@ class Filecopy:
 
         new_file_name: str = "".join((file + "_", current_time))
 
-        Popen(f"sudo cp -ip {file} {new_file_name}".split(), stdout=PIPE)
+        Popen(f"sudo cp -ip {file} {new_file_name}".split(), stdout=PIPE, stderr=PIPE)
+
+        Popen(f"cp {file} /tmp/{file}".split(), stdout=PIPE, stderr=PIPE)
 
         logger.info(f"New backup file created -> {new_file_name}")
