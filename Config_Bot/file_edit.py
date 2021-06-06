@@ -27,15 +27,23 @@ class FileEdit:
 
     @staticmethod
     def append_mode(file, data):
-        with open(file, "a") as a_file:
-            a_file.writelines(f"+@{data}:x:::::\n")
+        if file == "/etc/passwd":
+            with open(file, "a") as a_file:
+                a_file.writelines(f"+@{data}:x:::::\n")
+
+        elif file == "/etc/group":
+            with open(file, "a") as a_file:
+                a_file.writelines("+:::\n")
+
+        else:
+            with open(file, "a") as a_file:
+                a_file.writelines(data)
+
         logger.info("'%s' --> appended to the file %s" % (data, file))
 
     @staticmethod
     def find_replace(file, search_pattern, replace_pattern):
-        with open(file, "r") as r_file, open(file, "w") as w_file:
-            content = r_file.read()
-            # w_file.write()
+        pass
 
     @staticmethod
     def find_remove():
