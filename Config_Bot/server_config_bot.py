@@ -74,10 +74,12 @@ class Execute_bot:
                 "shadow:    compat",
                 "netgroup:    files nis nisplus",
             ]
+
             FileEdit.find_replace(
                 "/tmp/nsswitch.conf", search_patterns, replace_patterns
             )
-            Filecopy.copy_file("/tmp/nsswitch.conf", "/etc/nsswitch_conf")
+
+            Filecopy.copy_file("/tmp/nsswitch.conf", "/etc/nsswitch.conf")
 
         # This segment of code is for pubkeys related executions on requested server
 

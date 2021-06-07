@@ -66,9 +66,16 @@ class FileEdit:
 
                 else:
                     output_content = re.sub(s_pattern, r_pattern, content)
+                try:
+                    with open(file, "w") as out_file:
+                        out_file.write(output_content)
+                    logger.info(
+                        "Given %s are matched and replaced over the temp file %s"
+                        % (s_pattern, file)
+                    )
 
-                with open(file, "w") as out_file:
-                    out_file.write(output_content)
+                except Exception as e:
+                    logger.critical(e)
 
             else:
                 pass  # Need to add codes if further files to be edited based on situation

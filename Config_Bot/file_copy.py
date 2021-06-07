@@ -33,20 +33,22 @@ class Filecopy:
 
         new_file_name: str = "".join((file + "_", current_time))
 
-        Popen(f"sudo cp -ip {file} {new_file_name}".split(), stdout=PIPE, stderr=PIPE)
+        Popen(f"sudo cp -p {file} {new_file_name}".split(), stdout=PIPE, stderr=PIPE)
 
         Popen(
-            f"cp {file} /tmp/{os.path.basename(file)}".split(), stdout=PIPE, stderr=PIPE
+            f"cp -p {file} /tmp/{os.path.basename(file)}".split(),
+            stdout=PIPE,
+            stderr=PIPE,
         )
 
         logger.info(f"New backup file created -> {new_file_name}")
-        logger.info(f"Secondar backup file created -> /tmp/{os.path.basename(file)}")
+        logger.info(f"Secondary backup file created -> /tmp/{os.path.basename(file)}")
 
     @staticmethod
     def copy_file(source_file, target_file):
         """Function definiton: To copy a file"""
 
-        command = f"cp -ip {source_file} {target_file}".split()
+        command = f"cp -p {source_file} {target_file}".split()
         Popen(command, stdout=PIPE, stderr=PIPE)
 
         logger.info(f"{source_file} has been copied to {target_file}")
