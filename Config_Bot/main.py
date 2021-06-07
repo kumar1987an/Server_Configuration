@@ -34,7 +34,7 @@ def main():
     )
 
     arg = parser.parse_args()
-    Execute_bot.start(arg)
+    Execute_bot.execute(arg)
 
 
 if __name__ == "__main__":

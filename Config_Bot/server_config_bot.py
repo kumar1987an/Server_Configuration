@@ -32,7 +32,7 @@ class Execute_bot:
     def __init__(self, user):
         self.user = user
 
-    def start(self):
+    def execute(self):
         """A Bot to perform server configuration with json input"""
 
         path: str = f"/dummyfs/{self.user}"
