@@ -32,17 +32,17 @@ class FileEdit:
 
         if os.path.basename(file) == "passwd":
             with open(file, "a") as a_file:
-                a_file.writelines(f"+@{data}:x:::::\n")
+                a_file.writelines("+@{}:x:::::\n".format(data))
 
         elif os.path.basename(file) == "group":
             with open(file, "a") as a_file:
                 a_file.writelines("+:::\n")
 
-        else:
+        elif os.path.basename(file) == "cron.allow":
             with open(file, "a") as a_file:
-                a_file.writelines(data)
+                a_file.writelines("{}\n".format(data))
 
-        logger.info("'%s' --> appended to the file %s" % (data, file))
+        logger.info(" '%s' --> appended to the file %s" % (data, file))
 
     @staticmethod
     def find_replace(file, search_pattern, replace_pattern):
@@ -70,7 +70,7 @@ class FileEdit:
                     with open(file, "w") as out_file:
                         out_file.write(output_content)
                     logger.info(
-                        "Given %s are matched and replaced over the temp file %s"
+                        " Given %s are matched and replaced over the temp file %s"
                         % (s_pattern, file)
                     )
 

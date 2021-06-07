@@ -29,26 +29,32 @@ class Filecopy:
     def backup(file):
         """Function definiton: To backup of a file"""
 
-        current_time: str = dt.now().strftime("%d-%m-%y_%H:%M:%S")
+        current_time = dt.now().strftime("%d-%m-%y_%H:%M:%S")
 
-        new_file_name: str = "".join((file + "_", current_time))
-
-        Popen(f"sudo cp -p {file} {new_file_name}".split(), stdout=PIPE, stderr=PIPE)
+        new_file_name = "".join((file + "_", current_time))
 
         Popen(
-            f"cp -p {file} /tmp/{os.path.basename(file)}".split(),
+            "sudo cp -p {} {}".format(file, new_file_name).split(),
             stdout=PIPE,
             stderr=PIPE,
         )
 
-        logger.info(f"New backup file created -> {new_file_name}")
-        logger.info(f"Secondary backup file created -> /tmp/{os.path.basename(file)}")
+        Popen(
+            "cp -p {} /tmp/{}".format(file, os.path.basename(file)).split(),
+            stdout=PIPE,
+            stderr=PIPE,
+        )
+
+        logger.info(" New backup file created -> {}".format(new_file_name))
+        logger.info(
+            " Secondary backup file created -> /tmp/{}".format(os.path.basename(file))
+        )
 
     @staticmethod
     def copy_file(source_file, target_file):
         """Function definiton: To copy a file"""
 
-        command = f"cp -p {source_file} {target_file}".split()
+        command = "cp -p {} {}".format(source_file, target_file).split()
         Popen(command, stdout=PIPE, stderr=PIPE)
 
-        logger.info(f"{source_file} has been copied to {target_file}")
+        logger.info(" {} has been copied to {}".format(source_file, target_file))

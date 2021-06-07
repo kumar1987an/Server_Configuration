@@ -8,7 +8,8 @@
 
 # Importing Libraries
 
-from server_config_bot import Execute_bot
+from os import access
+import server_config_bot
 from argparse import ArgumentParser
 import logging
 
@@ -23,7 +24,7 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-def main():
+def app():
     """Argument parser"""
     parser = ArgumentParser()
     parser.add_argument(
@@ -34,8 +35,8 @@ def main():
     )
 
     arg = parser.parse_args()
-    Execute_bot.execute(arg)
+    server_config_bot.Execute_bot.execute(arg)
 
 
 if __name__ == "__main__":
-    main()
+    app()
