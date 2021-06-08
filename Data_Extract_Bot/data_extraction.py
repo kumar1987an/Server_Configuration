@@ -18,6 +18,19 @@ logger.addHandler(stream_handler)
 
 
 class DataExtract:
+
+    # Loading main Excel File
+    file_in = pd.ExcelFile(
+        os.path.join("/kmrnr8501/server_config", "config_input.xlsx")
+    )
+
+    @staticmethod
+    def extractor_function(user, config_type, json_filename):
+        output = DataExtract.file_in.parse(config_type)
+        with open(os.path.join(f"/dummyfs/{user}", json_filename), "w") as f:
+            f.writelines(output.to_json(orient="records"))
+            logger.info(f" {json_filename} Created: Success")
+
     @staticmethod
     def load_file(args):
         """Excel Data Extractor"""
@@ -41,59 +54,47 @@ class DataExtract:
                 logger.info(f" Directory '{args.user}' Created: Success")
                 os.makedirs(path)
 
-            # Loading main Excel File
-            file_in = pd.ExcelFile(
-                os.path.join("/kmrnr8501/server_config", "config_input.xlsx")
-            )
-
             # Extractor Loading
-            if args.adhoc in ["FS", "fs"]:
-                output = file_in.parse("filesystems")
-                with open(os.path.join(path, "filesystems.json"), "w") as f:
-                    f.writelines(output.to_json(orient="records"))
-                logger.info(f" filesystems.json Created: Success")
-
-            elif args.adhoc in ["NG", "ng"]:
-                output = file_in.parse("netgroups")
-                with open(os.path.join(path, "netgroups.json"), "w") as f:
-                    f.writelines(output.to_json(orient="records"))
-                logger.info(f" netgroups.json Created: Success")
-
-            elif args.adhoc in ["PK", "pk"]:
-                output = file_in.parse("pubkeys")
-                with open(os.path.join(path, "pubkeys.json"), "w") as f:
-                    f.writelines(output.to_json(orient="records"))
-                logger.info(f" pubkeys.json Created: Success")
-
-            elif args.adhoc in ["UG", "ug"]:
-                output = file_in.parse("users_groups")
-                with open(os.path.join(path, "users_groups.json"), "w") as f:
-                    f.writelines(output.to_json(orient="records"))
-                logger.info(f" users_groups.json Created: Success")
-
-            elif args.adhoc in ["SW", "sw"]:
-                output = file_in.parse("softwares")
-                with open(os.path.join(path, "softwares.json"), "w") as f:
-                    f.writelines(output.to_json(orient="records"))
-                logger.info(f" softwares.json Created: Success")
-
-            elif args.adhoc in ["CR", "cr"]:
-                output = file_in.parse("cronusers")
-                with open(os.path.join(path, "cronusers.json"), "w") as f:
-                    f.writelines(output.to_json(orient="records"))
-                logger.info(f" cronusers.json Created: Success")
-
-            elif args.adhoc in ["ALL", "all"]:
-                for i in file_in.sheet_names:
-                    output = file_in.parse(i)
-                    with open(os.path.join(path, i + ".json"), "w") as f:
-                        f.writelines(output.to_json(orient="records"))
-                    logger.info(f" {i}.json Created: Success")
-            else:
-                logger.warning(f" '{args.adhoc}' is not a valid adhoc request\n")
-                logger.warning(
-                    f" Please check the 'python main.py -h' command before execution"
-                )
+            for adhoc in args.adhoc:
+                if adhoc == "fs":
+                    DataExtract.extractor_function(
+                        args.user, "filesystems", "filesystems.json"
+                    )
+                if adhoc == "ng":
+                    DataExtract.extractor_function(
+                        args.user, "netgroups", "netgroups.json"
+                    )
+                if adhoc == "pk":
+                    DataExtract.extractor_function(args.user, "pubkeys", "pubkeys.json")
+                if adhoc == "ug":
+                    DataExtract.extractor_function(
+                        args.user, "users_groups", "usergroups.json"
+                    )
+                if adhoc == "sw":
+                    DataExtract.extractor_function(
+                        args.user, "softwares", "softwares.json"
+                    )
+                if adhoc == "cr":
+                    DataExtract.extractor_function(
+                        args.user, "cronusers", "cronusers.json"
+                    )
+                if adhoc == "all":
+                    DataExtract.extractor_function(
+                        args.user, "filesystems", "filesystems.json"
+                    )
+                    DataExtract.extractor_function(
+                        args.user, "netgroups", "netgroups.json"
+                    )
+                    DataExtract.extractor_function(args.user, "pubkeys", "pubkeys.json")
+                    DataExtract.extractor_function(
+                        args.user, "users_groups", "usergroups.json"
+                    )
+                    DataExtract.extractor_function(
+                        args.user, "softwares", "softwares.json"
+                    )
+                    DataExtract.extractor_function(
+                        args.user, "cronusers", "cronusers.json"
+                    )
 
         else:
             logger.critical(

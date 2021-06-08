@@ -16,13 +16,13 @@ logger.addHandler(stream_handler)
 def main():
     """Argument parser"""
     parser = ArgumentParser()
-    help_doc = """Adhoc requests are fs, ng, ug, sw, cr, pb and all -->
+    help_doc = """Adhoc requests are fs, ng, ug, sw, cr, pk and all -->
                   fs = filesystems, ng = netgroups,
                   ug = users_groups, sw = softwares,
                   cr = cronusers, pk = pubkeys,
                   all = all categories
                """
-    parser.add_argument("--adhoc", type=str, required=True, help=help_doc)
+    parser.add_argument("--adhoc", type=str, required=True, help=help_doc, nargs="+")
     parser.add_argument(
         "--user",
         type=str,
