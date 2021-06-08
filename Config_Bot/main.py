@@ -9,7 +9,7 @@
 # Importing Libraries
 
 from os import access
-import server_config_bot
+from server_config_bot import Execute_bot
 from argparse import ArgumentParser
 import logging
 
@@ -35,8 +35,10 @@ def app():
     )
 
     arg = parser.parse_args()
-    server_config_bot.Execute_bot.execute(arg)
+    return arg.__dict__.get("user")
 
 
 if __name__ == "__main__":
-    app()
+    switch_on = Execute_bot
+    executed_argparse = app()
+    switch_on.execute(executed_argparse)

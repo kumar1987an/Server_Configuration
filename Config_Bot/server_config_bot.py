@@ -29,14 +29,12 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-class Execute_bot:
-    def __init__(self, user):
-        self.user = user
-
-    def execute(self):
+class Execute_bot(object):
+    @staticmethod
+    def execute(user):
         """A Bot to perform server configuration with json input"""
 
-        path = "/dummyfs/%s" % self.user
+        path = "/dummyfs/%s" % user
 
         # This segment of code is for filesystem related executions on requested server
 
@@ -63,7 +61,7 @@ class Execute_bot:
                 json_loader = json.loads(json_file.read())
 
             for i in range(len(json_loader)):
-                if json_loader[i]["Server"] == os.uname().nodename:
+                if json_loader[i]["Server"] == os.uname()[1]:
                     netgroup_name = json_loader[i]["Netgroup"]
 
                     # Delicate file edit based on actual configuration requirement
@@ -92,8 +90,14 @@ class Execute_bot:
 
         # This segment of code is for pubkeys related executions on requested server
 
-        if os.path.lexists(os.path.join(path, "pubkeys.json")):
-            pass
+        if os.path.lexists(
+            os.path.join(path, "pubkeys.json")
+        ):  # checking for file existence
+
+            with open(
+                os.path.join(path, "cronusers.json")
+            ) as json_file:  # opening json file to read its contents and save into a variable
+                json_loader = json.loads(json_file.read())
 
         # This segment of code is for pubkeys related executions on requested server
 
