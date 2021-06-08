@@ -39,6 +39,6 @@ def app():
 
 
 if __name__ == "__main__":
-    switch_on = Execute_bot
-    executed_argparse = app()
-    switch_on.execute(executed_argparse)
+    argument_extracted = app()
+    switch_on = Execute_bot(argument_extracted)
+    switch_on.execute()

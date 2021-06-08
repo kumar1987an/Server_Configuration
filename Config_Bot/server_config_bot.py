@@ -29,12 +29,15 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-class Execute_bot(object):
-    @staticmethod
-    def execute(user):
+class Execute_bot:
+
+    def __init__(self, user):
+        self.user = user
+
+    def execute(self):
         """A Bot to perform server configuration with json input"""
 
-        path = "/dummyfs/%s" % user
+        path = "/dummyfs/%s" % self.user
 
         # This segment of code is for filesystem related executions on requested server
 
