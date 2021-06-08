@@ -11,7 +11,6 @@
 from file_copy import Filecopy
 import hashlib
 import os
-from subprocess import PIPE, Popen
 import logging
 
 # Importing required libraries
@@ -42,15 +41,12 @@ class Pubkey:
     @staticmethod
     def path_creator(user):
 
-        print(
+        logger.warning(
             "pubkey store directory for user {} doesn't exist, creating it now".format(user))
         os.makedirs("/SSH_Keys/{}".format(user))
         if os.path.lexists("/SSH_Keys"):
-            print(
+            logger.info(
                 "pubkey store directory for user {} created printing output".format(user))
-        ps1 = Popen("ls -ld /SSH_Keys/{}".format(user).split(),
-                    stdout=PIPE, stderr=PIPE)
-        return ps1.communicate()[0]
 
     @staticmethod
     def hash_checker(file):
@@ -67,15 +63,16 @@ class Pubkey:
             path = "/SSH_Keys/{}".format(user)
             authorized_file = os.path.join(path, "authorized_keys2")
             Filecopy.backup("{}".format(authorized_file), Type="secured")
-            print(Filecopy.backup.__dict__["new_file_name"])
+            # print(Filecopy.backup.__dict__["new_file_name"])
             try:
                 with open(authorized_file, "a") as key_file:
                     key_file.write("{}\n".format(pub_key))
-                print("Updated authorization file for user {}".format(user))
+                logger.info(
+                    "Updated authorization file for user {}".format(user))
 
             except Exception as e:
                 print(e)
 
         elif Pubkey.path_finder(user) == 1:
-            print(Pubkey.path_creator(user))
+            Pubkey.path_creator(user)
             Pubkey.authorized_keys(user, pub_key)
