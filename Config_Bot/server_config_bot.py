@@ -111,6 +111,8 @@ class Execute_bot:
                     ssh_key = json_loader[i]["ssh-key"]
 
                     Pubkey.authorized_keys(user_id, ssh_key)
+                    logger.info(" PUBKEY REQUEST FOR USER %s COMPLETED" %
+                                user_id)
 
         # This segment of code is for pubkeys related executions on requested server
 
