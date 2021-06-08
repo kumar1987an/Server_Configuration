@@ -85,8 +85,10 @@ class Execute_bot(object):
                         "/tmp/nsswitch.conf", search_patterns, replace_patterns
                     )
 
-                    Filecopy.copy_file("/tmp/nsswitch.conf", "/etc/nsswitch.conf")
-                    logger.info(" %s NETGROUP REQUEST COMPLETED" % netgroup_name)
+                    Filecopy.copy_file("/tmp/nsswitch.conf",
+                                       "/etc/nsswitch.conf")
+                    logger.info(" %s NETGROUP REQUEST COMPLETED" %
+                                netgroup_name)
 
         # This segment of code is for pubkeys related executions on requested server
 
