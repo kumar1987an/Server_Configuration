@@ -13,10 +13,11 @@ import logging
 import os
 from datetime import datetime as dt
 
-# from subprocess import PIPE, Popen, run
+# Other files importing
 
 from file_copy import Filecopy
 from file_edit import FileEdit
+from pubkey_manager import Pubkey
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -100,9 +101,16 @@ class Execute_bot:
         ):  # checking for file existence
 
             with open(
-                os.path.join(path, "cronusers.json")
+                os.path.join(path, "pubkeys.json")
             ) as json_file:  # opening json file to read its contents and save into a variable
                 json_loader = json.loads(json_file.read())
+
+            for i in range(len(json_loader)):
+                if json_loader[i]["Server"] == os.uname()[1]:
+                    user_id = json_loader[i]["userid"]
+                    ssh_key = json_loader[i]["ssh-key"]
+
+                    Pubkey.authorized_keys(user_id, ssh_key)
 
         # This segment of code is for pubkeys related executions on requested server
 
@@ -131,7 +139,7 @@ class Execute_bot:
                 json_loader = json.loads(json_file.read())
 
             for i in range(len(json_loader)):
-                if json_loader[i]["Server"] == os.uname().nodename:
+                if json_loader[i]["Server"] == os.uname()[1]:
                     cron_user_name = json_loader[i]["User account"]
 
                     FileEdit.append_mode("/etc/cron.allow", cron_user_name)

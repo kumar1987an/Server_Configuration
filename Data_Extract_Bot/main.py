@@ -19,7 +19,7 @@ def main():
     help_doc = """Adhoc requests are fs, ng, ug, sw, cr, pb and all -->
                   fs = filesystems, ng = netgroups,
                   ug = users_groups, sw = softwares,
-                  cr = cronusers, pb = pubkeys,
+                  cr = cronusers, pk = pubkeys,
                   all = all categories
                """
     parser.add_argument("--adhoc", type=str, required=True, help=help_doc)
