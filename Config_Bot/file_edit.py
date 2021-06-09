@@ -62,7 +62,8 @@ class FileEdit:
                     output_content = re.sub(s_pattern, r_pattern, content)
 
                 elif s_pattern == "shadow:.+":
-                    output_content = re.sub(s_pattern, r_pattern, content, count=1)
+                    output_content = re.sub(
+                        s_pattern, r_pattern, content, count=1)
 
                 else:
                     output_content = re.sub(s_pattern, r_pattern, content)
@@ -82,8 +83,29 @@ class FileEdit:
 
     @staticmethod
     def find_remove():
-        return " "
+        pass
 
     @staticmethod
-    def append_anywhere_mode():
-        return " "
+    def append_anywhere_mode(file, data, position="up"):
+        """ Appending data exactly above """
+        with open(file, "r") as read_file:
+            content = read_file.readlines()
+
+        stripped_line = "".join(letter for letter in data if letter != " ")
+        line_number = ""
+
+        for i, j in enumerate(content):
+
+            if re.findall(r"\+", j):
+                if position == "up":
+                    line_number = line_number + str(i)
+                    break
+                elif position == "down":
+                    line_number = line_number + str(i+1)
+                    break
+
+                # appending the content one line above of given search pattern
+        content.insert(int(line_number), stripped_line)
+
+        with open(file, "w") as write_file:
+            write_file.write(content)

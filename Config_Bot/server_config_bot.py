@@ -31,7 +31,6 @@ logger.addHandler(stream_handler)
 
 
 class Execute_bot:
-
     def __init__(self, user):
         self.user = user
 
@@ -111,13 +110,35 @@ class Execute_bot:
                     ssh_key = json_loader[i]["ssh-key"]
 
                     Pubkey.authorized_keys(user_id, ssh_key)
-                    logger.info(" PUBKEY REQUEST FOR USER %s COMPLETED" %
-                                user_id)
+                    logger.info(
+                        " PUBKEY REQUEST FOR USER %s COMPLETED" % user_id)
 
         # This segment of code is for pubkeys related executions on requested server
 
-        if os.path.lexists(os.path.join(path, "user_groups.json")):
-            pass
+        if os.path.lexists(
+            os.path.join(path, "user_groups.json")
+        ):  # checking for file existence
+
+            with open(
+                os.path.join(path, "pubkeys.json")
+            ) as json_file:  # opening json file to read its contents and save into a variable
+                json_loader = json.loads(json_file.read())
+
+            for i in range(len(json_loader)):
+                if json_loader[i]["Server"] == os.uname()[1]:
+                    passwd_entry = json_loader[i]["passwd_entry"]
+                    group_entry = json_loader[i]["group_entry"]
+                    shadow_entry = json_loader[i]["shadow_entry"]
+
+                    Filecopy.backup("/etc/passwd", Type="normal")
+                    Filecopy.backup("/etc/group", Type="normal")
+                    Filecopy.backup("/etc/shadow", Type="normal")
+                    FileEdit.append_anywhere_mode(
+                        "/etc/passwd", passwd_entry, "up")
+                    FileEdit.append_anywhere_mode(
+                        "/etc/group", group_entry, "up")
+                    FileEdit.append_anywhere_mode(
+                        "/etc/shadow", shadow_entry, "up")
 
         # This segment of code is for softwares related executions on requested server
 
