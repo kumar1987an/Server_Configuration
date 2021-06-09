@@ -40,6 +40,7 @@ class Execute_bot:
         path = "/dummyfs/%s" % self.user
 
         # This segment of code is for filesystem related executions on requested server
+        # ===================================================
 
         try:
 
@@ -51,6 +52,7 @@ class Execute_bot:
         except Exception as e:
             print(e)
 
+        # ===================================================
         # This segment of code is for netgroup related executions on requested server
 
         try:
