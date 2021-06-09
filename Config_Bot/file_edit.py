@@ -33,16 +33,22 @@ class FileEdit:
         if os.path.basename(file) == "passwd":
             with open(file, "a") as a_file:
                 a_file.writelines("+@{}:x:::::\n".format(data))
+            logger.info(" '%s' --> appended to the file %s" % (data, file))
 
         elif os.path.basename(file) == "group":
             with open(file, "a") as a_file:
                 a_file.writelines("+:::\n")
+            logger.info(" '%s' --> appended to the file %s" % (data, file))
 
         elif os.path.basename(file) == "cron.allow":
             with open(file, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
+            logger.info(" '%s' --> appended to the file %s" % (data, file))
 
-        logger.info(" '%s' --> appended to the file %s" % (data, file))
+        elif os.path.basename(file) == "shadow":
+            with open(file, "a") as a_file:
+                a_file.writelines("{}\n".format(data))
+            logger.info(" Required data has been appended to the file")
 
     @staticmethod
     def find_replace(file, search_pattern, replace_pattern):
@@ -71,8 +77,8 @@ class FileEdit:
                     with open(file, "w") as out_file:
                         out_file.write(output_content)
                     logger.info(
-                        " Given %s are matched and replaced over the temp file %s"
-                        % (s_pattern, file)
+                        " Given {} are matched and replaced over the temp file {}".format(
+                            s_pattern, file)
                     )
 
                 except Exception as e:
@@ -88,24 +94,32 @@ class FileEdit:
     @staticmethod
     def append_anywhere_mode(file, data, position="up"):
         """ Appending data exactly above """
-        with open(file, "r") as read_file:
-            content = read_file.readlines()
 
-        stripped_line = "".join(letter for letter in data if letter != " ")
-        line_number = ""
+        if file == "/etc/shadow":
+            FileEdit.append_mode(file, data)
 
-        for i, j in enumerate(content):
+        else:
 
-            if re.findall(r"\+", j):
-                if position == "up":
-                    line_number = line_number + str(i)
-                    break
-                elif position == "down":
-                    line_number = line_number + str(i+1)
-                    break
+            with open(file, "r") as read_file:
+                content = read_file.readlines()
 
-                # appending the content one line above of given search pattern
-        content.insert(int(line_number), stripped_line)
+            line_number = ""
 
-        with open(file, "w") as write_file:
-            write_file.write(content)
+            for i, j in enumerate(content):
+
+                if re.findall(r"\B\+", j):
+                    if position == "up":
+                        line_number = line_number + str(i)
+                        break
+                    elif position == "down":
+                        line_number = line_number + str(i+1)
+                        break
+
+            # appending the content one line above of given search pattern
+            content.insert(int(line_number),
+                           "{}\n".format(data))
+
+            with open(file, "w") as write_file:
+                write_file.writelines(content)
+            logger.info(
+                " Requested data has been appended {} to the regex pattern".format(position))

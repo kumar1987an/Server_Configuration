@@ -1,7 +1,7 @@
-""" 
+"""
     Codename: server_config_bot.py
 
-    Author: Kumaran Ramalingam 
+    Author: Kumaran Ramalingam
 
     Parent Codename:  do_main.py
 """
@@ -41,14 +41,19 @@ class Execute_bot:
 
         # This segment of code is for filesystem related executions on requested server
 
-        if os.path.lexists(os.path.join(path, "filesystems.json")):
+        try:
+            pass
+        except:
             pass
 
         # This segment of code is for netgroup related executions on requested server
 
-        if os.path.lexists(
-            os.path.join(path, "netgroups.json")
-        ):  # checking for file existence
+        try:
+
+            with open(
+                os.path.join(path, "netgroups.json")
+            ) as json_file:  # opening json file to read its contents and save into a variable
+                json_loader = json.loads(json_file.read())
 
             # For Copying required file for Netgroup change related operations
             logger.info(" ---------- File backup started ----------")
@@ -57,11 +62,6 @@ class Execute_bot:
             Filecopy.backup("/etc/group")
             logger.info(" ---------- File backup Completed ----------")
             # Filecopy.backup("/etc/shadow")
-
-            with open(
-                os.path.join(path, "netgroups.json")
-            ) as json_file:  # opening json file to read its contents and save into a variable
-                json_loader = json.loads(json_file.read())
 
             for i in range(len(json_loader)):
                 if json_loader[i]["Server"] == os.uname()[1]:
@@ -93,11 +93,12 @@ class Execute_bot:
                     logger.info(" %s NETGROUP REQUEST COMPLETED" %
                                 netgroup_name)
 
+        except Exception as e:
+            print(e)
+
         # This segment of code is for pubkeys related executions on requested server
 
-        if os.path.lexists(
-            os.path.join(path, "pubkeys.json")
-        ):  # checking for file existence
+        try:
 
             with open(
                 os.path.join(path, "pubkeys.json")
@@ -113,16 +114,25 @@ class Execute_bot:
                     logger.info(
                         " PUBKEY REQUEST FOR USER %s COMPLETED" % user_id)
 
+        except Exception as e:
+            print(e)
+
         # This segment of code is for pubkeys related executions on requested server
 
-        if os.path.lexists(
-            os.path.join(path, "user_groups.json")
-        ):  # checking for file existence
+        try:
 
             with open(
-                os.path.join(path, "pubkeys.json")
+                os.path.join(path, "usergroups.json")
             ) as json_file:  # opening json file to read its contents and save into a variable
                 json_loader = json.loads(json_file.read())
+
+            # For Copying required file for User/Group change related operations
+            logger.info(" ---------- File backup started ----------")
+            Filecopy.backup("/etc/passwd")
+            Filecopy.backup("/etc/group")
+            Filecopy.backup("/etc/shadow", Type="secured")
+            logger.info(" ---------- File backup Completed ----------")
+            # Filecopy.backup("/etc/shadow")
 
             for i in range(len(json_loader)):
                 if json_loader[i]["Server"] == os.uname()[1]:
@@ -130,36 +140,36 @@ class Execute_bot:
                     group_entry = json_loader[i]["group_entry"]
                     shadow_entry = json_loader[i]["shadow_entry"]
 
-                    Filecopy.backup("/etc/passwd", Type="normal")
-                    Filecopy.backup("/etc/group", Type="normal")
-                    Filecopy.backup("/etc/shadow", Type="normal")
                     FileEdit.append_anywhere_mode(
                         "/etc/passwd", passwd_entry, "up")
                     FileEdit.append_anywhere_mode(
                         "/etc/group", group_entry, "up")
                     FileEdit.append_anywhere_mode(
-                        "/etc/shadow", shadow_entry, "up")
+                        "/etc/shadow", shadow_entry)
+
+        except Exception as e:
+            print(e)
 
         # This segment of code is for softwares related executions on requested server
 
-        if os.path.lexists(os.path.join(path, "softwares.json")):
+        try:
+            pass
+        except:
             pass
 
         # This segment of code is for cronusers related executions on requested server
 
-        if os.path.lexists(
-            os.path.join(path, "cronusers.json")
-        ):  # checking for file existence
-
-            # For Copying required file for Netgroup change related operations
-            logger.info(" ---------- File backup started ----------")
-            Filecopy.backup("/etc/cron.allow")
-            logger.info(" ---------- File backup Completed ----------")
+        try:
 
             with open(
                 os.path.join(path, "cronusers.json")
             ) as json_file:  # opening json file to read its contents and save into a variable
                 json_loader = json.loads(json_file.read())
+
+            # For Copying required file for Netgroup change related operations
+            logger.info(" ---------- File backup started ----------")
+            Filecopy.backup("/etc/cron.allow")
+            logger.info(" ---------- File backup Completed ----------")
 
             for i in range(len(json_loader)):
                 if json_loader[i]["Server"] == os.uname()[1]:
@@ -169,3 +179,6 @@ class Execute_bot:
                     logger.info(
                         " %s USER HAS BEEN ALLOWED FOR CRONTAB EDIT" % cron_user_name
                     )
+
+        except Exception as e:
+            print(e)
