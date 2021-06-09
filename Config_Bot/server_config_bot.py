@@ -42,9 +42,14 @@ class Execute_bot:
         # This segment of code is for filesystem related executions on requested server
 
         try:
-            pass
-        except:
-            pass
+
+            with open(
+                os.path.join(path, "filesystems.json")
+            ) as json_file:  # opening json file to read its contents and save into a variable
+                json_loader = json.loads(json_file.read())
+
+        except Exception as e:
+            print(e)
 
         # This segment of code is for netgroup related executions on requested server
 
@@ -153,9 +158,14 @@ class Execute_bot:
         # This segment of code is for softwares related executions on requested server
 
         try:
-            pass
-        except:
-            pass
+
+            with open(
+                os.path.join(path, "softwares.json")
+            ) as json_file:  # opening json file to read its contents and save into a variable
+                json_loader = json.loads(json_file.read())
+
+        except Exception as e:
+            print(e)
 
         # This segment of code is for cronusers related executions on requested server
 
