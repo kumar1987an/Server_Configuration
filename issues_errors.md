@@ -1,3 +1,4 @@
+- Need to create backup script for rolling back everything
 - Need to work on /etc/yp.conf this contains ypservers which is not there in the excel
 - Unix SA need to add this in the sheet
 - fine tune NFS share autofind with Filesystem name --< very important
