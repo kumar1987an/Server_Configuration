@@ -39,3 +39,11 @@ class Filesystem:
 
             except Exception as e:
                 print(e)
+
+    @staticmethod
+    def lvm_scan():
+        pass
+
+    @staticmethod
+    def lvm_oper():
+        pass
