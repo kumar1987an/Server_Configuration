@@ -42,10 +42,21 @@ class Filesystem:
 
     @staticmethod
     def lvm_scan():
-        command = r"df -h | egrep -v 'root|swap|snap|udev|sd|tmpfs|boot'|tail -n +2"
-        output = check_output(command, shell=True)
-        for i in output.decode().split("\n"):
-            print(i)
+        command1 = r"df -h | egrep -v 'root|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
+        command2 = r"df -h | egrep -v 'root|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
+        percentage_used = check_output(command1, shell=True).decode().split()
+        filesys_name = check_output(command2, shell=True).decode().split()
+        unused_filesystems = []
+        for percent, filesys in zip(percentage_used, filesys_name):
+            if percent == "1%":
+                unused_filesystems.append(filesys)
+        if unused_filesystems:
+            for fs in unused_filesystems:
+                print(os.path.basename(fs))
+
+    @staticmethod
+    def lvm_backup():
+        pass
 
     @staticmethod
     def lvm_oper():
