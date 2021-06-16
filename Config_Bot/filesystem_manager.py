@@ -10,7 +10,7 @@
 
 import os
 import logging
-from subprocess import PIPE, call, Popen
+from subprocess import check_output, Popen, PIPE
 
 # Importing required libraries
 
@@ -42,7 +42,10 @@ class Filesystem:
 
     @staticmethod
     def lvm_scan():
-        pass
+        command = r"df -h | egrep -v 'root|swap|snap|udev|sd|tmpfs|boot'|tail -n +2"
+        output = check_output(command, shell=True)
+        for i in output.split("\n"):
+            print(i)
 
     @staticmethod
     def lvm_oper():
