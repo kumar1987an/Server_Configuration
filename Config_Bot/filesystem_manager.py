@@ -10,7 +10,7 @@
 
 import os
 import logging
-from subprocess import check_output, Popen, PIPE
+from subprocess import check_output, Popen, PIPE, call
 
 # Importing required libraries
 
@@ -41,7 +41,8 @@ class Filesystem:
                 print(e)
 
     @staticmethod
-    def lvm_scan():
+    def lvm_scan_and_backup():
+        """ This function will take care of new disk scan to the server and also will take backups if necessary of required filesytems """
         command1 = r"df -h | egrep -v 'root|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
         command2 = r"df -h | egrep -v 'root|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
         percentage_used = check_output(command1, shell=True).decode().split()
@@ -52,12 +53,10 @@ class Filesystem:
                 unused_filesystems.append(filesys)
         if unused_filesystems:
             for fs in unused_filesystems:
-                print(os.path.basename(fs))
-
-    @staticmethod
-    def lvm_backup():
-        pass
+                dirname = fs
+                basename = os.path.basename(dirname)
+                basedir = os.path.dirname(fs)
 
     @staticmethod
     def lvm_oper():
-        pass
+        return Filesystem.lvm_scan_and_backup()
