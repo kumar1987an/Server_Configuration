@@ -32,7 +32,7 @@ class Filesystem:
     @staticmethod
     def disk_scan():
         ps1 = Popen("ls /sys/class/scsi_host/".split(), stdout=PIPE)
-        for i in ps1.communicate()[0].split():
+        for i in ps1.communicate()[0].decode().split():
             try:
                 os.system(
                     "echo '- - -' > /sys/class/scsi_host/{}/scan".format(i))
@@ -44,7 +44,7 @@ class Filesystem:
     def lvm_scan():
         command = r"df -h | egrep -v 'root|swap|snap|udev|sd|tmpfs|boot'|tail -n +2"
         output = check_output(command, shell=True)
-        for i in output.split("\n"):
+        for i in output.decode().split("\n"):
             print(i)
 
     @staticmethod
