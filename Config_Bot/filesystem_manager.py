@@ -42,20 +42,23 @@ class Filesystem:
 
     @staticmethod
     def lvm_scan_and_backup():
-        """ This function will take care of new disk scan to the server and also will take backups if necessary of required filesytems """
-        command1 = r"df -h | egrep -v 'root|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
-        command2 = r"df -h | egrep -v 'root|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
+        """ This function will take care of new disk scan to 
+        the server and also will take backups if necessary of required filesytems """
+        command1 = r"df -h | egrep -v 'root|dxc|mnt|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
+        command2 = r"df -h | egrep -v 'root|dxc|mnt|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
         percentage_used = check_output(command1, shell=True).decode().split()
         filesys_name = check_output(command2, shell=True).decode().split()
         unused_filesystems = []
         for percent, filesys in zip(percentage_used, filesys_name):
-            if percent == "1%":
+            if percent in ["1%", "2%", "3%", "4%", "5%"]:
                 unused_filesystems.append(filesys)
+            else:
+                logger.critical(
+                    "{} is more than 5% occupied please perform \
+                        FS backup manually and re-run the program".format(filesys))
         if unused_filesystems:
             for fs in unused_filesystems:
-                dirname = fs
-                basename = os.path.basename(dirname)
-                basedir = os.path.dirname(fs)
+                call("tar -cvf ")
 
     @staticmethod
     def lvm_oper():
