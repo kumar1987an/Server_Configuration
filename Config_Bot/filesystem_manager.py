@@ -58,7 +58,11 @@ class Filesystem:
                         FS backup manually and re-run the program".format(filesys))
         if unused_filesystems:
             for fs in unused_filesystems:
-                call("tar -cvf ")
+                dirname = fs.split("/")[1]
+                Popen(r"tar -cvf /var/tmp/{}.tar /{}".format(dirname,
+                                                             dirname).split(), stdout=PIPE, stderr=PIPE)
+                tar_check = call(
+                    r"ls /var/tmp/{}.tar".format(dirname).split(), stdout=PIPE, stderr=PIPE)
 
     @staticmethod
     def lvm_oper():
