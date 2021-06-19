@@ -55,7 +55,7 @@ class Execute_bot:
             Filesystem.disk_scan()
             logger.info("Disk Scan Completed successfully")
             logger.info("VG, LV and FS Scan Started")
-            Filesystem.lvm_oper()
+            print(Filesystem.lvm_oper())
             logger.info("VG, LV and FS Scan Completed")
 
         except Exception as e:

@@ -41,7 +41,18 @@ class Filesystem:
                 print(e)
 
     @staticmethod
-    def lvm_scan_and_backup():
+    def fs_backup(filesystems):  # filesystems input as list of filesytems to be backuped
+        if filesystems:
+            for fs in filesystems:
+                dirname = fs.split("/")[1]
+                Popen(r"tar -cvf /var/tmp/{}.tar /{}".format(dirname,
+                                                             dirname).split(), stdout=PIPE, stderr=PIPE)
+                tar_check = call(
+                    r"ls /var/tmp/{}.tar".format(dirname).split(), stdout=PIPE, stderr=PIPE)
+                return tar_check
+
+    @staticmethod
+    def fs_scan():
         """ This function will take care of new disk scan to 
         the server and also will take backups if necessary of required filesytems """
         command1 = r"df -h | egrep -v 'root|dxc|mnt|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
@@ -56,14 +67,8 @@ class Filesystem:
                 logger.critical(
                     "{} is more than 5% occupied please perform \
                         FS backup manually and re-run the program".format(filesys))
-        if unused_filesystems:
-            for fs in unused_filesystems:
-                dirname = fs.split("/")[1]
-                Popen(r"tar -cvf /var/tmp/{}.tar /{}".format(dirname,
-                                                             dirname).split(), stdout=PIPE, stderr=PIPE)
-                tar_check = call(
-                    r"ls /var/tmp/{}.tar".format(dirname).split(), stdout=PIPE, stderr=PIPE)
+        return unused_filesystems
 
     @staticmethod
     def lvm_oper():
-        return Filesystem.lvm_scan_and_backup()
+        return Filesystem.fs_scan()
