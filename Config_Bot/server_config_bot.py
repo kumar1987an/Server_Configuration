@@ -49,14 +49,7 @@ class Execute_bot:
                 os.path.join(path, "filesystems.json")
             ) as json_file:  # opening json file to read its contents and save into a variable
                 json_loader = json.loads(json_file.read())
-
-            logger.info(" ---------- LVM started ---------- ")
-            logger.info("Disk Scan Started")
-            Filesystem.disk_scan()
-            logger.info("Disk Scan Completed successfully")
-            logger.info("VG, LV and FS Scan Started")
-            print(Filesystem.lvm_oper())
-            logger.info("VG, LV and FS Scan Completed")
+            Filesystem.lvm_oper()
 
         except Exception as e:
             print(e)
