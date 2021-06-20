@@ -61,8 +61,8 @@ class Filesystem:
     def fs_scan():
         """ This function will take care of new disk scan to 
         the server and also will take backups if necessary of required filesytems """
-        logger.info(" Proceeding with PV, VG, LV and FS scan")
         Filesystem.disk_scan()  # Calling Disk Scan Method
+        logger.info(" Proceeding with PV, VG, LV and FS scan")
         command1 = r"df -h | egrep -v 'root|dxc|mnt|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
         command2 = r"df -h | egrep -v 'root|dxc|mnt|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
         percentage_used = check_output(command1, shell=True).decode().split()
@@ -82,5 +82,5 @@ class Filesystem:
 
     @staticmethod
     def lvm_oper():
-        logger.info(" LVM Operation Started")
+        logger.info(" =========== LVM Operation Started =========== ")
         Filesystem.fs_scan()
