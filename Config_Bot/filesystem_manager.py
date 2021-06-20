@@ -58,17 +58,24 @@ class Filesystem:
                 " Filesystem backup not happened please login to the system and verified")
 
     @staticmethod
+    def fs_scan_template():
+        command1 = r"df -h | egrep -v 'root|dxc|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
+        command2 = r"df -h | egrep -v 'root|dxc|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
+        command3 = r"df -h | egrep -v 'root|dxc|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $1}'"
+        used_percentage = check_output(command1, shell=True).decode().split()
+        used_filesystem = check_output(command2, shell=True).decode().split()
+        used_volumegroup = check_output(command3, shell=True).decode().split()
+        return used_percentage, used_filesystem, used_volumegroup
+
+    @staticmethod
     def fs_scan():
         """ This function will take care of new disk scan to 
         the server and also will take backups if necessary of required filesytems """
         Filesystem.disk_scan()  # Calling Disk Scan Method
-        command1 = r"df -h | egrep -v 'root|dxc|mnt|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
-        command2 = r"df -h | egrep -v 'root|dxc|mnt|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
-        percentage_used = check_output(command1, shell=True).decode().split()
-        filesys_name = check_output(command2, shell=True).decode().split()
-        if percentage_used and filesys_name:
+        percentage_used, filesystem_used, _ = Filesystem.fs_scan_template()
+        if bool(percentage_used and filesystem_used) == True:
             logger.info(" Proceeding with PV, VG, LV and FS scan")
-            for percent, filesys in zip(percentage_used, filesys_name):
+            for percent, filesys in zip(percentage_used, filesystem_used):
                 if percent in ["1%", "2%", "3%", "4%", "5%"]:
                     Filesystem.fs_backup(filesys)
                 else:
@@ -76,10 +83,14 @@ class Filesystem:
                         FS backup manually and re-run the program".format(filesys))
             logger.info(" PV, VG, LV and FS scan successfully completed")
         else:
-            logger.info(
-                " There are no existing app releated filesytem available")
+            return 0
 
     @staticmethod
     def lvm_oper():
         logger.info(" =========== LVM Operation Started =========== ")
-        Filesystem.fs_scan()
+        if Filesystem.fs_scan() == 0:
+            logger.warning(
+                " There are no existing filesystems found, Proceeding with further LVM configs")
+            pass  # Vgcreate, Lvcreate, FScreate, mount, chown, chmod
+        else:
+            print(Filesystem.fs_scan_template())
