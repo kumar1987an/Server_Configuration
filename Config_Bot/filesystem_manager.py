@@ -60,14 +60,16 @@ class Filesystem:
         percentage_used = check_output(command1, shell=True).decode().split()
         filesys_name = check_output(command2, shell=True).decode().split()
         unused_filesystems = []
-        for percent, filesys in zip(percentage_used, filesys_name):
-            if percent in ["1%", "2%", "3%", "4%", "5%"]:
-                unused_filesystems.append(filesys)
-            else:
-                logger.critical(
-                    "{} is more than 5% occupied please perform \
+        if percentage_used and filesys_name:
+            for percent, filesys in zip(percentage_used, filesys_name):
+                if percent in ["1%", "2%", "3%", "4%", "5%"]:
+                    unused_filesystems.append(filesys)
+                else:
+                    logger.critical("{} is more than 5% occupied please perform \
                         FS backup manually and re-run the program".format(filesys))
-        return unused_filesystems
+                    return unused_filesystems
+        else:
+            Filesystem.disk_scan()
 
     @staticmethod
     def lvm_oper():
