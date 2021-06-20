@@ -71,7 +71,7 @@ class Filesystem:
     def fs_scan():
         """ This function will take care of new disk scan to 
         the server and also will take backups if necessary of required filesytems """
-        Filesystem.disk_scan()  # Calling Disk Scan Method
+        # Filesystem.disk_scan()  # Calling Disk Scan Method
         percentage_used, filesystem_used, _ = Filesystem.fs_scan_template()
         if bool(percentage_used and filesystem_used) == True:
             logger.info(" Proceeding with PV, VG, LV and FS scan")
@@ -93,4 +93,9 @@ class Filesystem:
                 " There are no existing filesystems found, Proceeding with further LVM configs")
             pass  # Vgcreate, Lvcreate, FScreate, mount, chown, chmod
         else:
-            print(Filesystem.fs_scan_template())
+            _, _, volumegroup_used = Filesystem.fs_scan_template()
+            vgs = volumegroup_used[0].split("/")[3].split("-")[0]
+            lvs = volumegroup_used[0].split("/")[3].split("-")[1]
+            command1 = r"pvs | grep -i {}| awk -F' ' '{print $2}'".format(vgs)
+            pvs = check_output(command1, shell=True)
+            print(vgs, lvs, pvs)
