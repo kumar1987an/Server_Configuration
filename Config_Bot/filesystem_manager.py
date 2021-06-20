@@ -62,13 +62,12 @@ class Filesystem:
         """ This function will take care of new disk scan to 
         the server and also will take backups if necessary of required filesytems """
         Filesystem.disk_scan()  # Calling Disk Scan Method
-        logger.info(" Proceeding with PV, VG, LV and FS scan")
         command1 = r"df -h | egrep -v 'root|dxc|mnt|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
         command2 = r"df -h | egrep -v 'root|dxc|mnt|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
         percentage_used = check_output(command1, shell=True).decode().split()
         filesys_name = check_output(command2, shell=True).decode().split()
-        unused_filesystems = []
         if percentage_used and filesys_name:
+            logger.info(" Proceeding with PV, VG, LV and FS scan")
             for percent, filesys in zip(percentage_used, filesys_name):
                 if percent in ["1%", "2%", "3%", "4%", "5%"]:
                     Filesystem.fs_backup(filesys)
