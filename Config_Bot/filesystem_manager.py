@@ -45,9 +45,9 @@ class Filesystem:
     @staticmethod
     def fs_backup(filesystem):  # filesystems input as list of filesytems to be backuped
         logger.info(" Filesystem {} backup Started".format(filesystem))
-        dirname = filesystem.split("/")[1]
-        Popen(r"tar -cvf /var/tmp/{}.tar /{}".format(dirname,
-                                                     dirname).split(), stdout=PIPE, stderr=PIPE)
+        dirname = filesystem.split("/")[3]
+        Popen(r"tar -cvf /var/tmp/{}.tar {}".format(dirname,
+                                                    filesystem).split(), stdout=PIPE, stderr=PIPE)
         tar_check = call(
             r"ls /var/tmp/{}.tar".format(dirname).split(), stdout=PIPE, stderr=PIPE)
         if tar_check == 0:
@@ -86,16 +86,61 @@ class Filesystem:
             return 0
 
     @staticmethod
-    def lvm_oper():
+    def pv_vg_lv_fs_create():
+        pass
+
+    @staticmethod
+    def lvm_operation():
         logger.info(" =========== LVM Operation Started =========== ")
         if Filesystem.fs_scan() == 0:
             logger.warning(
                 " There are no existing filesystems found, Proceeding with further LVM configs")
             pass  # Vgcreate, Lvcreate, FScreate, mount, chown, chmod
         else:
-            _, _, volumegroup_used = Filesystem.fs_scan_template()
-            vgs = volumegroup_used[0].split("/")[3].split("-")[0]
-            lvs = volumegroup_used[0].split("/")[3].split("-")[1]
-            command1 = "pvs | grep -i %s | awk -F' ' '{print $1}'" % vgs
-            pvs = check_output(command1, shell=True).split("\n")[0]
-            print(vgs, lvs, pvs)
+            _, filesystem_used, volumegroup_used = Filesystem.fs_scan_template()
+            for vgs, fsused in zip(volumegroup_used, filesystem_used):
+                vg = vgs.split("/")[3].split("-")[0]
+                lv = vgs.split("/")[3].split("-")[-1]
+                fs = fsused
+                command1 = "pvs | grep -i %s | awk -F' ' '{print $1}'" % vg
+                pvs = check_output(command1, shell=True).decode().split("\n")
+                print(pvs, fs, vg, lv)
+                try:
+                    command2 = r"umount %s" % fs
+                    Popen(command2.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " FS {} has been un-mounted successfully".format(fs))
+
+                except Exception as e:
+                    print(e)
+
+                try:
+                    command3 = r"lvremove -f %s/%s" % (vg, lv)
+                    Popen(command3.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " LV {} has been remove successfully".format(lv))
+
+                except Exception as e:
+                    print(e)
+
+                try:
+                    command4 = r"vgchange -an %s" % vg
+                    Popen(command4.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(" VG {} state changed to offline".format(vg))
+                    command5 = r"vgremove %s" % vg
+                    Popen(command5.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " VG {} has been removed from system completely".format(vg))
+
+                except Exception as e:
+                    print(e)
+
+                try:
+                    for pv in pvs:
+                        command6 = r"pvremove %s" % pv
+                        Popen(command6.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " PV(s) {} has been removed from system completely".format(*tuple(pvs)))
+
+                except Exception as e:
+                    print(e)

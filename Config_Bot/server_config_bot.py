@@ -49,7 +49,7 @@ class Execute_bot:
                 os.path.join(path, "filesystems.json")
             ) as json_file:  # opening json file to read its contents and save into a variable
                 json_loader = json.loads(json_file.read())
-            Filesystem.lvm_oper()
+            Filesystem.lvm_operation()
 
         except Exception as e:
             print(e)
