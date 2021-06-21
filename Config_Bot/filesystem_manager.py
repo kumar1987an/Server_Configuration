@@ -96,6 +96,6 @@ class Filesystem:
             _, _, volumegroup_used = Filesystem.fs_scan_template()
             vgs = volumegroup_used[0].split("/")[3].split("-")[0]
             lvs = volumegroup_used[0].split("/")[3].split("-")[1]
-            command1 = r"pvs | grep -i {}| awk -F' ' '{print $2}'".format(vgs)
-            pvs = check_output(command1, shell=True)
+            command1 = "pvs | grep -i %s | awk -F' ' '{print $1}'" % vgs
+            pvs = check_output(command1, shell=True).split("\n")[0]
             print(vgs, lvs, pvs)
