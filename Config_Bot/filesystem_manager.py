@@ -105,50 +105,54 @@ class Filesystem:
 
             logger.warning(" Proceeding with app data LVM wipeout")
             _, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
-            for fs, metadata in zip(filesystem_used, lv_vg_pv_used):
-                lv = metadata.split()[0]
-                vg = metadata.split()[1]
-                pv = metadata.split()[2]
+            print(filesystem_used)
+            print(lv_vg_pv_used)
+            if bool(filesystem_used) == True:
+                for fs, metadata in zip(filesystem_used, lv_vg_pv_used):
+                    lv = metadata.split()[0]
+                    vg = metadata.split()[1]
+                    pv = metadata.split()[2]
+
+                    try:
+                        command2 = r"umount %s" % fs
+                        Popen(command2.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info(
+                            " FS {} has been un-mounted successfully".format(fs))
+
+                    except Exception as e:
+                        print(e)
+
+                    try:
+                        command3 = r"lvremove -f /dev/%s/%s" % (vg, lv)
+                        Popen(command3.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info(
+                            " LV {} has been remove successfully".format(lv))
+
+                    except Exception as e:
+                        print(e)
+
+                    try:
+                        command4 = r"vgchange -an %s" % vg
+                        Popen(command4.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info(
+                            " VG {} state changed to offline".format(vg))
+                        command5 = r"vgremove %s" % vg
+                        Popen(command5.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info(
+                            " VG {} has been removed from system completely".format(vg))
+
+                    except Exception as e:
+                        print(e)
 
                 try:
-                    command2 = r"umount %s" % fs
-                    Popen(command2.split(), stdout=PIPE, stderr=PIPE)
+                    for pv in pvs:
+                        command6 = r"pvremove %s" % pv
+                        Popen(command6.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(
-                        " FS {} has been un-mounted successfully".format(fs))
+                        " PV(s) {} has been removed from system completely".format(*tuple(pvs)))
 
                 except Exception as e:
                     print(e)
-
-                try:
-                    command3 = r"lvremove -f /dev/%s/%s" % (vg, lv)
-                    Popen(command3.split(), stdout=PIPE, stderr=PIPE)
-                    logger.info(
-                        " LV {} has been remove successfully".format(lv))
-
-                except Exception as e:
-                    print(e)
-
-            #     try:
-            #         command4 = r"vgchange -an %s" % vg
-            #         Popen(command4.split(), stdout=PIPE, stderr=PIPE)
-            #         logger.info(" VG {} state changed to offline".format(vg))
-            #         command5 = r"vgremove %s" % vg
-            #         Popen(command5.split(), stdout=PIPE, stderr=PIPE)
-            #         logger.info(
-            #             " VG {} has been removed from system completely".format(vg))
-
-            #     except Exception as e:
-            #         print(e)
-
-            # try:
-            #     for pv in pvs:
-            #         command6 = r"pvremove %s" % pv
-            #         Popen(command6.split(), stdout=PIPE, stderr=PIPE)
-            #     logger.info(
-            #         " PV(s) {} has been removed from system completely".format(*tuple(pvs)))
-
-            # except Exception as e:
-            #     print(e)
             logger.warning(" Completed with app data LVM wipeout")
 
         else:
