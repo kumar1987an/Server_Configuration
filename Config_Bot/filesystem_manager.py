@@ -58,32 +58,34 @@ class Filesystem:
                 " Filesystem backup not happened please login to the system and verified")
 
     @staticmethod
-    def fs_scan_template():
+    def lvm_full_scan_template():
         command1 = r"df -h | egrep -v 'root|dxc|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
         command2 = r"df -h | egrep -v 'root|dxc|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
-        command3 = r"df -h | egrep -v 'root|dxc|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $1}'"
+        command3 = r"lvs -a -o +devices | egrep -v 'root|app' | awk -F' ' '{print $1}' | tail -n +2"
+        command4 = r"lvs -a -o +devices | egrep -v 'root|app' | awk -F' ' '{print $2}' | tail -n +2"
+        command5 = r"lvs -a -o +devices | egrep -v 'root|app' | awk -F' ' '{print $NF}' | awk -F'(' '{print $1}'| tail -n +2"
         used_percentage = check_output(command1, shell=True).decode().split()
         used_filesystem = check_output(command2, shell=True).decode().split()
-        used_volumegroup = check_output(command3, shell=True).decode().split()
-        return used_percentage, used_filesystem, used_volumegroup
+        used_logicalvol = check_output(command3, shell=True).decode().split()
+        used_volumegrup = check_output(command4, shell=True).decode().split()
+        used_physiclvol = check_output(command5, shell=True).decode().split()
+        return used_percentage, used_filesystem, used_logicalvol, used_volumegrup, used_physiclvol
 
     @staticmethod
     def fs_scan():
         """ This function will take care of new disk scan to 
         the server and also will take backups if necessary of required filesytems """
+        logger.debug(" Full fs scan started ")
         # Filesystem.disk_scan()  # Calling Disk Scan Method
         percentage_used, filesystem_used, _ = Filesystem.fs_scan_template()
         if bool(percentage_used and filesystem_used) == True:
-            logger.info(" Proceeding with PV, VG, LV and FS scan")
             for percent, filesys in zip(percentage_used, filesystem_used):
                 if percent in ["1%", "2%", "3%", "4%", "5%"]:
                     Filesystem.fs_backup(filesys)
                 else:
                     logger.critical("{} is more than 5% occupied please perform \
                         FS backup manually and re-run the program".format(filesys))
-            logger.info(" PV, VG, LV and FS scan successfully completed")
-        else:
-            return 0
+        logger.info(" Full fs scan complete")
 
     @staticmethod
     def pv_vg_lv_fs_create():
@@ -98,9 +100,10 @@ class Filesystem:
             pass  # Vgcreate, Lvcreate, FScreate, mount, chown, chmod
         else:
             _, filesystem_used, volumegroup_used = Filesystem.fs_scan_template()
-            for vgs, fsused in zip(volumegroup_used, filesystem_used):
-                vg = vgs.split("/")[3].split("-")[0]
-                lv = vgs.split("/")[3].split("-")[-1]
+            logger.warning(" Proceeding with app data LVM wipeout")
+            for vg_lv_apath, fsused in zip(volumegroup_used, filesystem_used):
+                vg = vg_lv_apath.split("/")[3].split("-")[0]
+                lv = vg_lv_apath.split("/")[3].split("-")[-1]
                 command1 = "pvs | grep -i %s | awk -F' ' '{print $1}'" % vg
                 pvs = check_output(command1, shell=True).decode().split("\n")
                 try:
@@ -112,26 +115,26 @@ class Filesystem:
                 except Exception as e:
                     print(e)
 
-                # try:
-                #     command3 = r"lvremove -f %s/%s" % (vg, lv)
-                #     Popen(command3.split(), stdout=PIPE, stderr=PIPE)
-                #     logger.info(
-                #         " LV {} has been remove successfully".format(lv))
+                try:
+                    command3 = r"lvremove -f %s" % vg_lv_apath
+                    Popen(command3.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " LV {} has been remove successfully".format(lv))
 
-                # except Exception as e:
-                #     print(e)
+                except Exception as e:
+                    print(e)
 
-                # try:
-                #     command4 = r"vgchange -an %s" % vg
-                #     Popen(command4.split(), stdout=PIPE, stderr=PIPE)
-                #     logger.info(" VG {} state changed to offline".format(vg))
-                #     command5 = r"vgremove %s" % vg
-                #     Popen(command5.split(), stdout=PIPE, stderr=PIPE)
-                #     logger.info(
-                #         " VG {} has been removed from system completely".format(vg))
+                try:
+                    command4 = r"vgchange -an %s" % vg
+                    Popen(command4.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(" VG {} state changed to offline".format(vg))
+                    command5 = r"vgremove %s" % vg
+                    Popen(command5.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " VG {} has been removed from system completely".format(vg))
 
-                # except Exception as e:
-                #     print(e)
+                except Exception as e:
+                    print(e)
 
                 # try:
                 #     for pv in pvs:
@@ -142,3 +145,4 @@ class Filesystem:
 
                 # except Exception as e:
                 #     print(e)
+            logger.warning(" Completed Process with app data LVM wipeout")
