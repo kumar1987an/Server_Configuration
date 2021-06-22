@@ -101,46 +101,44 @@ class Filesystem:
             for vgs, fsused in zip(volumegroup_used, filesystem_used):
                 vg = vgs.split("/")[3].split("-")[0]
                 lv = vgs.split("/")[3].split("-")[-1]
-                fs = fsused
                 command1 = "pvs | grep -i %s | awk -F' ' '{print $1}'" % vg
                 pvs = check_output(command1, shell=True).decode().split("\n")
-                print(pvs, fs, vg, lv)
                 try:
-                    command2 = r"umount %s" % fs
+                    command2 = r"umount %s" % fsused
                     Popen(command2.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(
-                        " FS {} has been un-mounted successfully".format(fs))
+                        " FS {} has been un-mounted successfully".format(fsused))
 
                 except Exception as e:
                     print(e)
 
-                try:
-                    command3 = r"lvremove -f %s/%s" % (vg, lv)
-                    Popen(command3.split(), stdout=PIPE, stderr=PIPE)
-                    logger.info(
-                        " LV {} has been remove successfully".format(lv))
+                # try:
+                #     command3 = r"lvremove -f %s/%s" % (vg, lv)
+                #     Popen(command3.split(), stdout=PIPE, stderr=PIPE)
+                #     logger.info(
+                #         " LV {} has been remove successfully".format(lv))
 
-                except Exception as e:
-                    print(e)
+                # except Exception as e:
+                #     print(e)
 
-                try:
-                    command4 = r"vgchange -an %s" % vg
-                    Popen(command4.split(), stdout=PIPE, stderr=PIPE)
-                    logger.info(" VG {} state changed to offline".format(vg))
-                    command5 = r"vgremove %s" % vg
-                    Popen(command5.split(), stdout=PIPE, stderr=PIPE)
-                    logger.info(
-                        " VG {} has been removed from system completely".format(vg))
+                # try:
+                #     command4 = r"vgchange -an %s" % vg
+                #     Popen(command4.split(), stdout=PIPE, stderr=PIPE)
+                #     logger.info(" VG {} state changed to offline".format(vg))
+                #     command5 = r"vgremove %s" % vg
+                #     Popen(command5.split(), stdout=PIPE, stderr=PIPE)
+                #     logger.info(
+                #         " VG {} has been removed from system completely".format(vg))
 
-                except Exception as e:
-                    print(e)
+                # except Exception as e:
+                #     print(e)
 
-                try:
-                    for pv in pvs:
-                        command6 = r"pvremove %s" % pv
-                        Popen(command6.split(), stdout=PIPE, stderr=PIPE)
-                    logger.info(
-                        " PV(s) {} has been removed from system completely".format(*tuple(pvs)))
+                # try:
+                #     for pv in pvs:
+                #         command6 = r"pvremove %s" % pv
+                #         Popen(command6.split(), stdout=PIPE, stderr=PIPE)
+                #     logger.info(
+                #         " PV(s) {} has been removed from system completely".format(*tuple(pvs)))
 
-                except Exception as e:
-                    print(e)
+                # except Exception as e:
+                #     print(e)
