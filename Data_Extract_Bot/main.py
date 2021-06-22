@@ -1,3 +1,4 @@
+# Highly Important this code runs in Python3 environment only
 from data_extraction import DataExtract
 from argparse import ArgumentParser
 import logging
@@ -22,7 +23,8 @@ def main():
                   cr = cronusers, pk = pubkeys,
                   all = all categories
                """
-    parser.add_argument("--adhoc", type=str, required=True, help=help_doc, nargs="+")
+    parser.add_argument("--adhoc", type=str, required=True,
+                        help=help_doc, nargs="+")
     parser.add_argument(
         "--user",
         type=str,
