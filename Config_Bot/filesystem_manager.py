@@ -145,11 +145,11 @@ class Filesystem:
                         print(e)
 
                 try:
-                    for pv in pvs:
-                        command6 = r"pvremove %s" % pv
+                    for hdisk in pv:
+                        command6 = r"pvremove %s" % hdisk
                         Popen(command6.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(
-                        " PV(s) {} has been removed from system completely".format(*tuple(pvs)))
+                        " PV(s) {} has been removed from system completely".format(*tuple(pv)))
 
                 except Exception as e:
                     print(e)
