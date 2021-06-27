@@ -58,7 +58,7 @@ class Filesystem:
 
         else:
             logger.critical(
-                " Filesystem backup not happened please login to the system and verified")
+                " Filesystem backup not happened please login to the system and verify")
 
     @staticmethod
     def lvm_full_scan_template():
@@ -73,87 +73,117 @@ class Filesystem:
         return used_percentage, used_filesystem, used_lv_vg_pv
 
     @staticmethod
-    def lvm_full_scan():
-        """ This function will take care of new disk scan to
-        the server and also will take backups if necessary of required filesytems """
-        logger.debug(" Full lvm  scan started ")
-        # Filesystem.disk_scan()  # Calling Disk Scan Method
-        percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
-        if bool(percentage_used and filesystem_used) == True:
-            return 0
-
-        elif bool(lv_vg_pv_used) == True:
-            return 1
-
-        else:
-            return 2
-
-        logger.info(" Full lvm scan complete")
-
-    @staticmethod
     def pv_vg_lv_fs_create():
         pass
 
     @staticmethod
     def lvm_operation():
+        """ This function will perform various LVM Operations like VG, LV, PS and FS level including backup and LVM removal """
         logger.info(" =========== LVM Operation Started =========== ")
+        logger.debug(" Full lvm  scan started ")
 
-        if Filesystem.lvm_full_scan() == 0:
+        # Filesystem.disk_scan()  # Calling Disk Scan Method
+        logger.debug(" Full lvm  scan completed ")
+        percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
+        if bool(filesystem_used) == True:
 
-            logger.warning(" Proceeding with app data LVM wipeout")
-            percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
             for ps, fs, metadata in zip(percentage_used, filesystem_used, lv_vg_pv_used):
                 lv = metadata.split()[0]
                 vg = metadata.split()[1]
                 pv = metadata.split()[2]
+
+                logger.warning(
+                    " Proceeding with app data LVM wipeout if FS, LV, VG, PV available")
                 if ps in ["1%", "2%", "3%", "4%", "5%"]:
-                    Filesystem.fs_backup(fs)
+
+                    Filesystem.fs_backup(fs)  # Backup function call
+
+                    try:
+                        command2 = r"umount %s" % fs
+                        Popen(command2.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info(
+                            " FS {} has been un-mounted successfully".format(fs))
+
+                    except Exception as e:
+                        print(e)
+
+                    try:
+                        command3 = r"lvremove -f /dev/%s/%s" % (vg, lv)
+                        Popen(command3.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info(
+                            " LV {} has been remove successfully".format(lv))
+
+                    except Exception as e:
+                        print(e)
+
+                    try:
+                        command4 = r"vgchange -an %s" % vg
+                        Popen(command4.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info(
+                            " VG {} state changed to offline".format(vg))
+                        command5 = r"vgremove %s" % vg
+                        Popen(command5.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info(
+                            " VG {} has been removed from system completely".format(vg))
+
+                    except Exception as e:
+                        print(e)
+
+                    try:
+                        command6 = r"pvremove %s" % pv
+                        Popen(command6.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info(
+                            " PV(s) {} has been removed from system completely".format(pv))
+
+                    except Exception as e:
+                        print(e)
+
+                    logger.warning(" Completed with app data LVM wipeout")
+
                 else:
                     logger.critical("{} is more than 5% occupied please perform \
                                     FS backup manually and re-run the program".format(fs))
-                # try:
-                #     command2 = r"umount %s" % fs
-                #     Popen(command2.split(), stdout=PIPE, stderr=PIPE)
-                #     logger.info(
-                #         " FS {} has been un-mounted successfully".format(fs))
 
-                # except Exception as e:
-                #     print(e)
+        elif bool(lv_vg_pv_used) == True:
 
-                # try:
-                #     command3 = r"lvremove -f /dev/%s/%s" % (vg, lv)
-                #     Popen(command3.split(), stdout=PIPE, stderr=PIPE)
-                #     logger.info(
-                #         " LV {} has been remove successfully".format(lv))
-
-                # except Exception as e:
-                #     print(e)
-
-                # try:
-                #     command4 = r"vgchange -an %s" % vg
-                #     Popen(command4.split(), stdout=PIPE, stderr=PIPE)
-                #     logger.info(
-                #         " VG {} state changed to offline".format(vg))
-                #     command5 = r"vgremove %s" % vg
-                #     Popen(command5.split(), stdout=PIPE, stderr=PIPE)
-                #     logger.info(
-                #         " VG {} has been removed from system completely".format(vg))
-
-                # except Exception as e:
-                #     print(e)
-
-                # try:
-                #     for hdisk in pv:
-                #         command6 = r"pvremove %s" % hdisk
-                #         Popen(command6.split(), stdout=PIPE, stderr=PIPE)
-                #     logger.info(
-                #         " PV(s) {} has been removed from system completely".format(*tuple(pv)))
-
-                # except Exception as e:
-                #     print(e)
-            logger.warning(" Completed with app data LVM wipeout")
-
-        elif Filesystem.lvm_full_scan() == 2:
             logger.warning(
-                " There are no existing filesystems found, Proceeding with further LVM configs")
-            Filesystem.pv_vg_lv_fs_create()  # Vgcreate, Lvcreate, FScreate, mount, chown, chmod
+                " Proceeding with app data LVM wipeout if FS, LV, VG, PV if available")
+
+            for metadata in lv_vg_pv_used:
+                lv = metadata.split()[0]
+                vg = metadata.split()[1]
+                pv = metadata.split()[2]
+
+                try:
+                    command3 = r"lvremove -f /dev/%s/%s" % (vg, lv)
+                    Popen(command3.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " LV {} has been remove successfully".format(lv))
+
+                except Exception as e:
+                    print(e)
+
+                try:
+                    command4 = r"vgchange -an %s" % vg
+                    Popen(command4.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " VG {} state changed to offline".format(vg))
+                    command5 = r"vgremove %s" % vg
+                    Popen(command5.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " VG {} has been removed from system completely".format(vg))
+
+                except Exception as e:
+                    print(e)
+
+                try:
+                    command6 = r"pvremove %s" % pv
+                    Popen(command6.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " PV(s) {} has been removed from system completely".format(pv))
+
+                except Exception as e:
+                    print(e)
+
+        else:
+            pass  # Actual LVM Creation started
