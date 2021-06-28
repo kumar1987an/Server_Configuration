@@ -182,4 +182,4 @@ class Filesystem:
                     print(e)
 
         else:
-            pass  # Actual LVM Creation started
+            print(1)  # Actual LVM Creation started
