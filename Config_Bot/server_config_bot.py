@@ -55,6 +55,10 @@ class Execute_bot:
             Filecopy.backup("/etc/fstab")
             logger.info(" ---------- File backup Completed ----------")
 
+            logger.debug(" Scanning for newly added disks")
+            # Filesystem.disk_scan()  # Calling Disk Scan Method
+            logger.debug(" Scan Complete for disks")
+
             for i in range(len(json_loader)):
                 if json_loader[i]["Server"] == os.uname()[1]:
                     fs_type = json_loader[i]["Filesystem"]

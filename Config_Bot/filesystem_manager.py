@@ -75,12 +75,11 @@ class Filesystem:
     @staticmethod
     def lvm_operation(fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm):
         """ This function will perform various LVM Operations like VG, LV, PS and FS level including backup and LVM removal """
-        logger.info(" =========== LVM Operation Started =========== ")
-        logger.debug(" Full lvm  scan started ")
 
-        # Filesystem.disk_scan()  # Calling Disk Scan Method
-        logger.debug(" Full lvm  scan completed ")
+        logger.info(" =========== LVM Operation Started =========== ")
+
         percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
+
         if bool(filesystem_used) == True:
 
             for ps, fs, metadata in zip(percentage_used, filesystem_used, lv_vg_pv_used):
@@ -182,4 +181,6 @@ class Filesystem:
                     print(e)
 
         else:
-            print(1)  # Actual LVM Creation started
+            pass  # Actual LVM Creation started
+
+        logger.info(" =========== LVM Operation Completed =========== ")
