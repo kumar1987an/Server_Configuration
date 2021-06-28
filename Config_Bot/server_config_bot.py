@@ -11,7 +11,6 @@
 import json
 import logging
 import os
-from datetime import datetime as dt
 
 # Other files importing
 

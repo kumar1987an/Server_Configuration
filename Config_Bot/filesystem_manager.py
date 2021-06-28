@@ -181,6 +181,9 @@ class Filesystem:
                     print(e)
 
         else:
-            pass  # Actual LVM Creation started
+            # ======================= Working LVM create ==========================
+            # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
+            pass
+            # =====================================================================
 
         logger.info(" =========== LVM Operation Completed =========== ")
