@@ -45,6 +45,25 @@ class Filesystem(object):
                 print(e)
 
     @staticmethod
+    def unused_pvs_check():
+        command1 = r"pvs | awk -F' ' '{print $1}' | tail -n +2"
+        used_pvs = check_output(command1, shell=True)
+        pattern = re.compile(r"sd[a-z]")
+        matches = [i.group(0) for i in pattern.finditer(used_pvs)]
+        used_disks = ""
+        for index in range(len(matches)):
+            if index == len(matches) - 1:
+                used_disks = used_disks + matches[index] + "|sda"
+            else:
+                used_disks = used_disks + matches[index] + "|"
+        try:
+            command2 = r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $2}'|awk -F':' '{print $1}'" % used_disks
+            free_pvs = check_output(command2, shell=True).decode().split()
+            return free_pvs
+        except CalledProcessError:
+            print("No disks found empty")
+
+    @staticmethod
     def fs_backup(filesystem):  # filesystem name as input to be backed up.
         logger.info(" Filesystem {} backup Started".format(filesystem))
         dir_name = filesystem.split("/")[3]
@@ -75,7 +94,7 @@ class Filesystem(object):
         return used_percentage, used_filesystem, used_lv_vg_pv
 
     @staticmethod
-    def lvm_operation(fs_type, mount_name, mount_size, mount_grp, mount_perm):
+    def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_grp, mount_perm):
         """ This function will perform various LVM Operations like
         VG, LV, PS and FS level including backup and LVM removal """
 
@@ -186,22 +205,12 @@ class Filesystem(object):
         else:
             # ======================= Working LVM create ==========================
             # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
-            command1 = r"pvs | awk -F' ' '{print $1}' | tail -n +2"
-            used_pvs = check_output(command1, shell=True)
-            pattern = re.compile(r"sd[a-z]")
-            matches = [i.group(0) for i in pattern.finditer(used_pvs)]
-            used_disks = ""
-            for index in range(len(matches)):
-                if index == len(matches) - 1:
-                    used_disks = used_disks + matches[index] + "|sda"
-                else:
-                    used_disks = used_disks + matches[index] + "|"
-            try:
-                command2 = r"fdisk -l| grep -i sd| egrep -v '{}'".format(used_disks)
-                free_pvs = check_output(command2, shell=True).decode().split()
-                print(free_pvs)
-            except CalledProcessError:
-                print("No disks found empty")
+            unused_pvs = Filesystem.unused_pvs_check()
+            if unused_pvs:
+                try:
+                    pass
+                except:
+                    pass
 
             # =====================================================================
 
