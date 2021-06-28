@@ -43,7 +43,7 @@ class Filesystem:
         logger.debug(" System wide Disk Scan Completed successfully")
 
     @staticmethod
-    def fs_backup(filesystem):  # filesystems input as list of filesytems to be backuped
+    def fs_backup(filesystem):  # filesystem name as input to be backed up.
         logger.info(" Filesystem {} backup Started".format(filesystem))
         dirname = filesystem.split("/")[3]
         Popen(r"tar -cvf /var/tmp/{}.tar {}".format(dirname,
@@ -71,10 +71,6 @@ class Filesystem:
             command3, shell=True).decode().split("\n")
         used_lv_vg_pv.pop()  # removing last null element
         return used_percentage, used_filesystem, used_lv_vg_pv
-
-    @staticmethod
-    def pv_vg_lv_fs_create():
-        pass
 
     @staticmethod
     def lvm_operation():
@@ -158,7 +154,7 @@ class Filesystem:
                     command3 = r"lvremove -f /dev/%s/%s" % (vg, lv)
                     Popen(command3.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(
-                        " LV {} has been remove successfully".format(lv))
+                        " LV {} has been removed successfully".format(lv))
 
                 except Exception as e:
                     print(e)

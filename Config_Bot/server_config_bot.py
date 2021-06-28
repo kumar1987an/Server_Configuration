@@ -49,7 +49,28 @@ class Execute_bot:
                 os.path.join(path, "filesystems.json")
             ) as json_file:  # opening json file to read its contents and save into a variable
                 json_loader = json.loads(json_file.read())
-            Filesystem.lvm_operation()
+
+            # For taking backup file related to LVM
+            logger.info(" ---------- File backup started ----------")
+            Filecopy.backup("/etc/fstab")
+            logger.info(" ---------- File backup Completed ----------")
+
+            for i in range(len(json_loader)):
+                if json_loader[i]["Server"] == os.uname()[1]:
+                    fs_type = json_loader[i]["Filesystem"]
+                    mount_name = json_loader[i]["Mountpoint"]
+                    mount_size = json_loader[i]["Size(G or M)"]
+                    mount_owner = json_loader[i]["Owner"]
+                    mount_group = json_loader[i]["Group"]
+                    mount_perm = json_loader[i]["Permission"]
+                    print(fs_type)
+                    print(mount_name)
+                    print(mount_size)
+                    print(mount_group)
+                    print(mount_owner)
+                    print(mount_perm)
+
+                    # Filesystem.lvm_operation()
 
         except Exception as e:
             print(e)
@@ -70,7 +91,6 @@ class Execute_bot:
             Filecopy.backup("/etc/nsswitch.conf")
             Filecopy.backup("/etc/group")
             logger.info(" ---------- File backup Completed ----------")
-            # Filecopy.backup("/etc/shadow")
 
             for i in range(len(json_loader)):
                 if json_loader[i]["Server"] == os.uname()[1]:
