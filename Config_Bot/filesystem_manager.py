@@ -59,7 +59,7 @@ class Filesystem(object):
         try:
             command2 = r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $2}'|awk -F':' '{print $1}'" % used_disks
             free_pvs = check_output(command2, shell=True).decode().split()
-            return free_pvs
+            return sorted(free_pvs)
         except CalledProcessError:
             print("No disks found empty")
 
@@ -207,10 +207,11 @@ class Filesystem(object):
             # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
             unused_pvs = Filesystem.unused_pvs_check()
             if unused_pvs:
-                try:
-                    pass
-                except:
-                    pass
+                print(unused_pvs)
+                # try:
+                #     pass
+                # except:
+                #     pass
 
             # =====================================================================
 
