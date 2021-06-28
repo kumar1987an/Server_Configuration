@@ -27,6 +27,7 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
+# noinspection SpellCheckingInspection
 class Filesystem(object):
 
     @staticmethod
@@ -45,15 +46,15 @@ class Filesystem(object):
     @staticmethod
     def fs_backup(filesystem):  # filesystem name as input to be backed up.
         logger.info(" Filesystem {} backup Started".format(filesystem))
-        dirname = filesystem.split("/")[3]
-        Popen(r"tar -cvf /var/tmp/{}.tar {}".format(dirname,
+        dir_name = filesystem.split("/")[3]
+        Popen(r"tar -cvf /var/tmp/{}.tar {}".format(dir_name,
                                                     filesystem).split(), stdout=PIPE, stderr=PIPE)
         tar_check = call(
-            r"ls /var/tmp/{}.tar".format(dirname).split(), stdout=PIPE, stderr=PIPE)
+            r"ls /var/tmp/{}.tar".format(dir_name).split(), stdout=PIPE, stderr=PIPE)
 
         if tar_check == 0:
 
-            logger.info(" Filesystem {} backup completed".format(dirname))
+            logger.info(" Filesystem {} backup completed".format(dir_name))
             return 0
 
         else:
@@ -73,7 +74,7 @@ class Filesystem(object):
         return used_percentage, used_filesystem, used_lv_vg_pv
 
     @staticmethod
-    def lvm_operation(fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm):
+    def lvm_operation(fs_type, mount_name, mount_size, mount_grp, mount_perm):
         """ This function will perform various LVM Operations like
         VG, LV, PS and FS level including backup and LVM removal """
 
@@ -143,7 +144,7 @@ class Filesystem(object):
         elif bool(lv_vg_pv_used) is True:
 
             logger.warning(
-                " Proceeding with app data LVM wipeout if FS, LV, VG, PV if available")
+                " Proceeding with app data LVM wipe out if FS, LV, VG, PV if available")
 
             for metadata in lv_vg_pv_used:
                 lv = metadata.split()[0]

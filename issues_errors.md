@@ -6,3 +6,4 @@
 - if usergroup alone need to be executed then it should be independent on other configs
 - if we execute the Config bot from second time it should not again repeat the configuration if the config exists
 - "boot|root|tmp|swap|snap|udev|sda" this for ubuntu alone but for environment its just "root|swap|tmpfs|boot"
+- "sda" should be added to egrep by default
