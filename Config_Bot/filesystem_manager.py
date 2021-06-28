@@ -27,7 +27,7 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-class Filesystem:
+class Filesystem(object):
 
     @staticmethod
     def disk_scan():
@@ -37,10 +37,10 @@ class Filesystem:
             try:
                 os.system(
                     "echo '- - -' > /sys/class/scsi_host/{}/scan".format(i))
+                logger.debug(" System wide Disk Scan Completed successfully")
 
             except Exception as e:
                 print(e)
-        logger.debug(" System wide Disk Scan Completed successfully")
 
     @staticmethod
     def fs_backup(filesystem):  # filesystem name as input to be backed up.
@@ -74,13 +74,14 @@ class Filesystem:
 
     @staticmethod
     def lvm_operation(fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm):
-        """ This function will perform various LVM Operations like VG, LV, PS and FS level including backup and LVM removal """
+        """ This function will perform various LVM Operations like
+        VG, LV, PS and FS level including backup and LVM removal """
 
         logger.info(" =========== LVM Operation Started =========== ")
 
-        percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
+        percentage_used, filesystem_used, lv_vg_pv_used = Filesystem().lvm_full_scan_template()
 
-        if bool(filesystem_used) == True:
+        if bool(filesystem_used) is True:
 
             for ps, fs, metadata in zip(percentage_used, filesystem_used, lv_vg_pv_used):
                 lv = metadata.split()[0]
@@ -91,7 +92,7 @@ class Filesystem:
                     " Proceeding with app data LVM wipeout if FS, LV, VG, PV available")
                 if ps in ["1%", "2%", "3%", "4%", "5%"]:
 
-                    Filesystem.fs_backup(fs)  # Backup function call
+                    Filesystem().fs_backup(fs)  # Backup function call
 
                     try:
                         command2 = r"umount %s" % fs
@@ -139,7 +140,7 @@ class Filesystem:
                     logger.critical("{} is more than 5% occupied please perform \
                                     FS backup manually and re-run the program".format(fs))
 
-        elif bool(lv_vg_pv_used) == True:
+        elif bool(lv_vg_pv_used) is True:
 
             logger.warning(
                 " Proceeding with app data LVM wipeout if FS, LV, VG, PV if available")
@@ -183,7 +184,9 @@ class Filesystem:
         else:
             # ======================= Working LVM create ==========================
             # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
-            pass
+            command1 = r"pvdisplay | grep -i 'PV Name' | awk -F' ' '{print $NF}'"
+            used_pvs = check_output(command1, shell=True).decode().split()
+            print(used_pvs)
             # =====================================================================
 
         logger.info(" =========== LVM Operation Completed =========== ")
