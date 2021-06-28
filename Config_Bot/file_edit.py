@@ -48,7 +48,7 @@ class FileEdit:
         elif os.path.basename(file) == "shadow":
             with open(file, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
-            logger.info(" Required data has been appended to the file")
+            logger.info(" Shadow data has been appended to the file")
 
     @staticmethod
     def find_replace(file, search_pattern, replace_pattern):
@@ -92,7 +92,7 @@ class FileEdit:
         pass
 
     @staticmethod
-    def append_anywhere_mode(file, data, position="up"):
+    def append_lineaware_mode(file, data, position="up"):
         """ Appending data exactly above """
 
         if file == "/etc/shadow":
@@ -119,7 +119,28 @@ class FileEdit:
             content.insert(int(line_number),
                            "{}\n".format(data))
 
-            with open(file, "w") as write_file:
-                write_file.writelines(content)
-            logger.info(
-                " Requested data has been appended {} to the regex pattern".format(position))
+            if file == "/etc/passwd":
+                dir_name = data.split(":")[5]
+                try:
+                    with open(file, "w") as write_file:
+                        write_file.writelines(content)
+                    logger.info(
+                        " User data has been appened to {}".format(file))
+                    logger.warning(
+                        " Tyring to create Home directory {}".format(dir_name))
+                    os.makedirs(dir_name)
+                    logger.info(
+                        "{} Home directory created successfully".format(dir_name))
+
+                except Exception as e:
+                    logger.warning(e)
+
+            elif file == "/etc/group":
+                try:
+                    with open(file, "w") as write_file:
+                        write_file.writelines(content)
+                    logger.info(
+                        " Group data has been appended to {}".format(file))
+
+                except Exception as e:
+                    logger.warning(e)

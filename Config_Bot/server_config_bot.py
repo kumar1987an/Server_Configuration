@@ -169,11 +169,11 @@ class Execute_bot:
                     group_entry = json_loader[i]["group_entry"]
                     shadow_entry = json_loader[i]["shadow_entry"]
 
-                    FileEdit.append_anywhere_mode(
+                    FileEdit.append_lineaware_mode(
                         "/etc/passwd", passwd_entry, "up")
-                    FileEdit.append_anywhere_mode(
+                    FileEdit.append_lineaware_mode(
                         "/etc/group", group_entry, "up")
-                    FileEdit.append_anywhere_mode(
+                    FileEdit.append_lineaware_mode(
                         "/etc/shadow", shadow_entry)
 
         except Exception as e:

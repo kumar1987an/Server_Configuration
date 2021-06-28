@@ -57,7 +57,7 @@ class Filecopy:
                 stderr=PIPE,
             )
             logger.info(
-                " Primary backup file created and new file name secured")
+                " Primary backup file for {} created and new file name secured".format(os.path.basename(file)))
 
     @ staticmethod
     def copy_file(source_file, target_file):
