@@ -63,14 +63,9 @@ class Execute_bot:
                     mount_owner = json_loader[i]["Owner"]
                     mount_group = json_loader[i]["Group"]
                     mount_perm = json_loader[i]["Permission"]
-                    print(fs_type)
-                    print(mount_name)
-                    print(mount_size)
-                    print(mount_group)
-                    print(mount_owner)
-                    print(mount_perm)
 
-                    # Filesystem.lvm_operation()
+                    Filesystem.lvm_operation(
+                        fs_type, mount_name, mount_size, mount_group, mount_owner, mount_perm)
 
         except Exception as e:
             print(e)

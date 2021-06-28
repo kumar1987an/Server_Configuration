@@ -73,7 +73,7 @@ class Filesystem:
         return used_percentage, used_filesystem, used_lv_vg_pv
 
     @staticmethod
-    def lvm_operation():
+    def lvm_operation(fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm):
         """ This function will perform various LVM Operations like VG, LV, PS and FS level including backup and LVM removal """
         logger.info(" =========== LVM Operation Started =========== ")
         logger.debug(" Full lvm  scan started ")
