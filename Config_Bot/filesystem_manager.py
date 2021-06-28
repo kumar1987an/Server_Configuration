@@ -10,7 +10,8 @@
 
 import os
 import logging
-from subprocess import check_output, Popen, PIPE, call
+from subprocess import check_output, Popen, PIPE, call, CalledProcessError
+import re
 
 # Importing required libraries
 
@@ -185,9 +186,23 @@ class Filesystem(object):
         else:
             # ======================= Working LVM create ==========================
             # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
-            command1 = r"pvdisplay | grep -i 'PV Name' | awk -F' ' '{print $NF}'"
-            used_pvs = check_output(command1, shell=True).decode().split()
-            print(used_pvs)
+            command1 = r"pvs | awk -F' ' '{print $1}' | tail -n +2"
+            used_pvs = check_output(command1, shell=True)
+            pattern = re.compile(r"sd[a-z]")
+            matches = [i.group(0) for i in pattern.finditer(used_pvs)]
+            used_disks = ""
+            for index in range(len(matches)):
+                if index == len(matches) - 1:
+                    used_disks = used_disks + matches[index] + "|sda"
+                else:
+                    used_disks = used_disks + matches[index] + "|"
+            try:
+                command2 = r"fdisk -l| grep -i sd| egrep -v '{}'".format(used_disks)
+                free_pvs = check_output(command2, shell=True).decode().split()
+                print(free_pvs)
+            except CalledProcessError:
+                print("No disks found empty")
+
             # =====================================================================
 
         logger.info(" =========== LVM Operation Completed =========== ")
