@@ -61,7 +61,7 @@ class Filesystem(object):
             command3 = r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $3}'" % used_disks
             free_pvs = check_output(command2, shell=True).decode().split()
             free_gbs = check_output(command3, shell=True).decode().split()
-            return sorted(free_pvs), free_gbs
+            return free_pvs, free_gbs
         except CalledProcessError:
             print("No disks found empty")
 
@@ -207,18 +207,15 @@ class Filesystem(object):
         else:
             # ======================= Working LVM create ==========================
             # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
-            unused_pvs, unused_gbs = Filesystem.unused_pvs_check()
-            print(unused_gbs)
+            unused_pvs, disk_space_available = Filesystem.unused_pvs_check()
+            print(sum([int(disk) for disk in disk_space_available]))
             print(unused_pvs)
             print(fs_type)
             print(mount_name)
-            print(mount_size)
+            print(mount_size.upper())
             print(mount_grp)
             print(mount_owner)
             print(int(mount_perm))
-
-
-
             # =====================================================================
 
         logger.info(" =========== LVM Operation Completed =========== ")
