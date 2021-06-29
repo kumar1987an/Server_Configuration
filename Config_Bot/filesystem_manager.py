@@ -58,8 +58,10 @@ class Filesystem(object):
                 used_disks = used_disks + matches[index] + "|"
         try:
             command2 = r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $2}'|awk -F':' '{print $1}'" % used_disks
+            command3 = r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $3}'" % used_disks
             free_pvs = check_output(command2, shell=True).decode().split()
-            return sorted(free_pvs)
+            free_gbs = check_output(command3, shell=True).decode().split()
+            return sorted(free_pvs), free_gbs
         except CalledProcessError:
             print("No disks found empty")
 
@@ -83,8 +85,8 @@ class Filesystem(object):
 
     @staticmethod
     def lvm_full_scan_template():
-        command1 = r"df -h | egrep -v 'root|dxc|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
-        command2 = r"df -h | egrep -v 'root|dxc|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
+        command1 = r"df -h | egrep -v 'root|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
+        command2 = r"df -h | egrep -v 'root|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
         command3 = r"lvs -a -o +devices | egrep -v 'root|app' | awk -F' ' '{print $1,$2,$NF}'|tail -n +2 | awk -F'(' '{print $1}'"
         used_percentage = check_output(command1, shell=True).decode().split()
         used_filesystem = check_output(command2, shell=True).decode().split()
@@ -205,13 +207,17 @@ class Filesystem(object):
         else:
             # ======================= Working LVM create ==========================
             # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
-            unused_pvs = Filesystem.unused_pvs_check()
-            if unused_pvs:
-                print(unused_pvs)
-                # try:
-                #     pass
-                # except:
-                #     pass
+            unused_pvs, unused_gbs = Filesystem.unused_pvs_check()
+            print(unused_gbs)
+            print(unused_pvs)
+            print(fs_type)
+            print(mount_name)
+            print(mount_size)
+            print(mount_grp)
+            print(mount_owner)
+            print(int(mount_perm))
+
+
 
             # =====================================================================
 

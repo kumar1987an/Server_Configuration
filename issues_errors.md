@@ -2,8 +2,8 @@
 - Need to work on /etc/yp.conf this contains ypservers which is not there in the excel
 - Unix SA need to add this in the sheet
 - fine tune NFS share autofind with Filesystem name --< very important
-- if there is no data in some of the tabs how the script behaves
+- if there is no data in some tabs need to check how the script behaves
 - if usergroup alone need to be executed then it should be independent on other configs
 - if we execute the Config bot from second time it should not again repeat the configuration if the config exists
-- "boot|root|tmp|swap|snap|udev|sda" this for ubuntu alone but for environment its just "root|swap|tmpfs|boot"
+- "boot|root|tmp|swap|snap|udev|sda" this for ubuntu alone but for environment its just "root|swap|tmpfs|boot|<migration NFS>"
 - "sda" should be added to egrep by default
