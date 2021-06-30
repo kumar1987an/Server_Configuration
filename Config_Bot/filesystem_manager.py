@@ -210,12 +210,17 @@ class Filesystem(object):
             unused_pvs, disk_space_available = Filesystem.unused_pvs_check()
             print(disk_space_available)
             print(unused_pvs)
-            print(fs_type)
-            print(mount_name)
-            print(mount_size.upper())
-            print(mount_grp)
-            print(mount_owner)
-            print(int(mount_perm))
+            given_mnt_size_string = mount_size.partition(
+                re.search(r"[a-zA-Z]", mount_size.upper()).group())
+            given_disk_size_unit = given_mnt_size_string[1]
+            given_disk_size_value = given_mnt_size_string[0]
+            for size in disk_space_available:
+
+                if given_disk_size_unit == "M":
+                    disk_size_mb = int(size)*1024
+                    if disk_size_mb < given_disk_size_value:
+                        print(given_disk_size_value)
+
             # =====================================================================
 
         logger.info(" =========== LVM Operation Completed =========== ")
