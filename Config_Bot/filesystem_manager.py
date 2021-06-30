@@ -8,13 +8,11 @@
     First Parent Codename:  main.py
 """
 
+# Importing required libraries
 import os
 import logging
 from subprocess import check_output, Popen, PIPE, call, CalledProcessError
 import re
-
-# Importing required libraries
-
 # Other files importing
 
 logger = logging.getLogger(__name__)
@@ -90,94 +88,41 @@ class Filesystem(object):
         command3 = r"lvs -a -o +devices | egrep -v 'root|app' | awk -F' ' '{print $1,$2,$NF}'|tail -n +2 | awk -F'(' '{print $1}'"
         used_percentage = check_output(command1, shell=True).decode().split()
         used_filesystem = check_output(command2, shell=True).decode().split()
-        used_lv_vg_pv = check_output(
-            command3, shell=True).decode().split("\n")
+        used_lv_vg_pv = check_output(command3, shell=True).decode().split("\n")
         used_lv_vg_pv.pop()  # removing last null element
         return used_percentage, used_filesystem, used_lv_vg_pv
 
     @staticmethod
-    def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_grp, mount_perm):
+    def check_and_wipeoutlvm(percentage_used, filesystem_used, lv_vg_pv_used):
         """ This function will perform various LVM Operations like
         VG, LV, PS and FS level including backup and LVM removal """
 
         logger.info(" =========== LVM Operation Started =========== ")
-
-        percentage_used, filesystem_used, lv_vg_pv_used = Filesystem().lvm_full_scan_template()
-
-        if bool(filesystem_used) is True:
-
-            for ps, fs, metadata in zip(percentage_used, filesystem_used, lv_vg_pv_used):
-                lv = metadata.split()[0]
-                vg = metadata.split()[1]
-                pv = metadata.split()[2]
-
-                logger.warning(
-                    " Proceeding with app data LVM wipeout if FS, LV, VG, PV available")
-                if ps in ["1%", "2%", "3%", "4%", "5%"]:
-
-                    Filesystem().fs_backup(fs)  # Backup function call
-
-                    try:
-                        command2 = r"umount %s" % fs
-                        Popen(command2.split(), stdout=PIPE, stderr=PIPE)
-                        logger.info(
-                            " FS {} has been un-mounted successfully".format(fs))
-
-                    except Exception as e:
-                        print(e)
-
-                    try:
-                        command3 = r"lvremove -f /dev/%s/%s" % (vg, lv)
-                        Popen(command3.split(), stdout=PIPE, stderr=PIPE)
-                        logger.info(
-                            " LV {} has been remove successfully".format(lv))
-
-                    except Exception as e:
-                        print(e)
-
-                    try:
-                        command4 = r"vgchange -an %s" % vg
-                        Popen(command4.split(), stdout=PIPE, stderr=PIPE)
-                        logger.info(
-                            " VG {} state changed to offline".format(vg))
-                        command5 = r"vgremove %s" % vg
-                        Popen(command5.split(), stdout=PIPE, stderr=PIPE)
-                        logger.info(
-                            " VG {} has been removed from system completely".format(vg))
-
-                    except Exception as e:
-                        print(e)
-
-                    try:
-                        command6 = r"pvremove %s" % pv
-                        Popen(command6.split(), stdout=PIPE, stderr=PIPE)
-                        logger.info(
-                            " PV(s) {} has been removed from system completely".format(pv))
-
-                    except Exception as e:
-                        print(e)
-
-                    logger.warning(" Completed with app data LVM wipeout")
-
-                else:
-                    logger.critical("{} is more than 5% occupied please perform \
-                                    FS backup manually and re-run the program".format(fs))
-
-        elif bool(lv_vg_pv_used) is True:
+        for ps, fs, metadata in zip(percentage_used, filesystem_used, lv_vg_pv_used):
+            lv = metadata.split()[0]
+            vg = metadata.split()[1]
+            pv = metadata.split()[2]
 
             logger.warning(
-                " Proceeding with app data LVM wipe out if FS, LV, VG, PV if available")
+                " Proceeding with app data LVM wipeout if FS, LV, VG, PV available")
+            if ps in ["1%", "2%", "3%", "4%", "5%"]:
 
-            for metadata in lv_vg_pv_used:
-                lv = metadata.split()[0]
-                vg = metadata.split()[1]
-                pv = metadata.split()[2]
+                Filesystem().fs_backup(fs)  # Backup function call
+
+                try:
+                    command2 = r"umount %s" % fs
+                    Popen(command2.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info(
+                        " FS {} has been un-mounted successfully".format(fs))
+
+                except Exception as e:
+                    print(e)
 
                 try:
                     command3 = r"lvremove -f /dev/%s/%s" % (vg, lv)
                     Popen(command3.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(
-                        " LV {} has been removed successfully".format(lv))
+                        " LV {} has been remove successfully".format(lv))
 
                 except Exception as e:
                     print(e)
@@ -204,23 +149,44 @@ class Filesystem(object):
                 except Exception as e:
                     print(e)
 
-        else:
-            # ======================= Working LVM create ==========================
-            # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
-            unused_pvs, disk_space_available = Filesystem.unused_pvs_check()
-            print(disk_space_available)
-            print(unused_pvs)
-            given_mnt_size_string = mount_size.partition(
-                re.search(r"[a-zA-Z]", mount_size.upper()).group())
-            given_disk_size_unit = given_mnt_size_string[1]
-            given_disk_size_value = given_mnt_size_string[0]
-            for size in disk_space_available:
+                logger.warning(" Completed with app data LVM wipeout")
 
-                if given_disk_size_unit == "M":
-                    disk_size_mb = int(size)*1024
-                    if disk_size_mb < given_disk_size_value:
-                        print(given_disk_size_value)
-
-            # =====================================================================
+            else:
+                logger.critical("{} is more than 5% occupied please perform \
+                                    FS backup manually and re-run the program".format(fs))
 
         logger.info(" =========== LVM Operation Completed =========== ")
+
+    @staticmethod
+    def check_and_warn(lv_vg_pv_used):
+
+        for metadata in lv_vg_pv_used:
+            lv = metadata.split()[0]
+            vg = metadata.split()[1]
+            pv = metadata.split()[2]
+
+            logger.critical("""These are the LVMs still in use without required filesystems 
+                                VG: {}
+                                LV: {}
+                                PV: {}
+                            """.format(vg, lv, pv))
+
+    @staticmethod
+    def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm):
+        # ======================= Working LVM create ==========================
+        # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
+        unused_pvs, disk_space_available = Filesystem.unused_pvs_check()
+        print(disk_space_available)
+        print(unused_pvs)
+        given_mnt_size_string = mount_size.partition(
+            re.search(r"[a-zA-Z]", mount_size.upper()).group())
+        given_disk_size_unit = given_mnt_size_string[1]
+        given_disk_size_value = given_mnt_size_string[0]
+        for size in disk_space_available:
+
+            if given_disk_size_unit == "M":
+                disk_size_mb = int(size)*1024
+                if disk_size_mb < given_disk_size_value:
+                    print(given_disk_size_value)
+
+        # =====================================================================
