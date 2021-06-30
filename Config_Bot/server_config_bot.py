@@ -60,9 +60,9 @@ class ExecuteBot:
             logger.debug(" Scan Complete for disks")
 
             percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
-            if bool(filesystem_used) is True:
+            if bool(filesystem_used) is False: # Need to make it back as True after testing
                 Filesystem.check_and_wipeoutlvm(percentage_used, filesystem_used, lv_vg_pv_used)
-            elif bool(lv_vg_pv_used) is True:
+            elif bool(lv_vg_pv_used) is False: # Need to make it back as True after testing
                 Filesystem.check_and_warn(lv_vg_pv_used)
             else:
                 for i in range(len(json_loader)):

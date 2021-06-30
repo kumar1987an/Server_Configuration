@@ -7,3 +7,4 @@
 - if we execute the Config bot from second time it should not again repeat the configuration if the config exists
 - "boot|root|tmp|swap|snap|udev|sda" this for ubuntu alone but for environment its just "root|swap|tmpfs|boot|<migration NFS>"
 - "sda" should be added to egrep by default
+- appvg is default here i am using app1vg please change to appvg based on your projects

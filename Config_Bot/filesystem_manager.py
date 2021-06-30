@@ -57,11 +57,20 @@ class Filesystem(object):
         try:
             command2 = r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $2}'|awk -F':' '{print $1}'" % used_disks
             command3 = r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $3}'" % used_disks
-            free_pvs = check_output(command2, shell=True).decode().split()
-            free_gbs = check_output(command3, shell=True).decode().split()
-            return free_pvs, free_gbs
+            free_pvs = check_output(command2, shell=True).split()
+            free_gbs = check_output(command3, shell=True).split()
+            return dict(zip(free_pvs, free_gbs))
+
         except CalledProcessError:
             print("No disks found empty")
+
+    @staticmethod
+    def partial_vgs_check():
+        command1 = r"vgs | egrep -v  'root|app' | tail -n +2 | awk -F' ' '{print $1}'"
+        command2 = r"vgs | egrep -v  'root|app' | tail -n +2 | awk -F' ' '{print $NF}' | awk -F'.' '{print $1}'"
+        recently_used_vgs = check_output(command1, shell=True).split()
+        freespace_on_recently_used_vgs = check_output(command2, shell=True).split()
+        return dict(zip(recently_used_vgs, freespace_on_recently_used_vgs))
 
     @staticmethod
     def fs_backup(filesystem):  # filesystem name as input to be backed up.
@@ -75,7 +84,6 @@ class Filesystem(object):
         if tar_check == 0:
 
             logger.info(" Filesystem {} backup completed".format(dir_name))
-            return 0
 
         else:
             logger.critical(
@@ -165,28 +173,20 @@ class Filesystem(object):
             vg = metadata.split()[1]
             pv = metadata.split()[2]
 
-            logger.critical("""These are the LVMs still in use without required filesystems 
-                                VG: {}
-                                LV: {}
-                                PV: {}
-                            """.format(vg, lv, pv))
+            logger.critical("""
+            These are the LVMs still in use without required filesystems 
+            VG: {}
+            LV: {}
+            PV: {}
+            """.format(vg, lv, pv))
 
     @staticmethod
     def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm):
         # ======================= Working LVM create ==========================
         # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
-        unused_pvs, disk_space_available = Filesystem.unused_pvs_check()
-        print(disk_space_available)
-        print(unused_pvs)
-        given_mnt_size_string = mount_size.partition(
-            re.search(r"[a-zA-Z]", mount_size.upper()).group())
-        given_disk_size_unit = given_mnt_size_string[1]
-        given_disk_size_value = given_mnt_size_string[0]
-        for size in disk_space_available:
-
-            if given_disk_size_unit == "M":
-                disk_size_mb = int(size)*1024
-                if disk_size_mb < given_disk_size_value:
-                    print(given_disk_size_value)
+        unused_pvs_data = Filesystem.unused_pvs_check() # a dictionary
+        partial_vgs_data = Filesystem.partial_vgs_check() # a dictionary
+        print(unused_pvs_data)
+        print(partial_vgs_data)
 
         # =====================================================================
