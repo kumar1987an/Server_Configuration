@@ -24,7 +24,8 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-class Filecopy:
+class Filecopy(object):
+
     @staticmethod
     def backup(file, Type="normal"):
         """Function definiton: To backup of a file"""

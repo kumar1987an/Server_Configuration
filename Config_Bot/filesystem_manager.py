@@ -208,7 +208,7 @@ class Filesystem(object):
             # ======================= Working LVM create ==========================
             # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
             unused_pvs, disk_space_available = Filesystem.unused_pvs_check()
-            print(sum([int(disk) for disk in disk_space_available]))
+            print(disk_space_available)
             print(unused_pvs)
             print(fs_type)
             print(mount_name)

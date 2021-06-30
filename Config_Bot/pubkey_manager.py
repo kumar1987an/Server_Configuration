@@ -28,7 +28,7 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-class Pubkey:
+class Pubkey(object):
 
     @staticmethod
     def path_finder(user):

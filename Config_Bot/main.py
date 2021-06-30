@@ -9,7 +9,7 @@
 # Importing Libraries
 
 from os import access
-from server_config_bot import Execute_bot
+from server_config_bot import ExecuteBot
 from argparse import ArgumentParser
 import logging
 
@@ -40,5 +40,5 @@ def app():
 
 if __name__ == "__main__":
     argument_extracted = app()
-    switch_on = Execute_bot(argument_extracted)
+    switch_on = ExecuteBot(argument_extracted)
     switch_on.execute()

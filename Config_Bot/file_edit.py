@@ -23,7 +23,7 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-class FileEdit:
+class FileEdit(object):
     """this class is to edit file (Dynamic)"""
 
     @staticmethod

@@ -30,7 +30,8 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-class Execute_bot:
+class ExecuteBot:
+
     def __init__(self, user):
         self.user = user
 
