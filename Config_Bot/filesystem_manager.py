@@ -13,7 +13,7 @@ import os
 import logging
 from subprocess import check_output, Popen, PIPE, call, CalledProcessError
 import re
-from collections import OrderedDict
+
 # Other files importing
 from file_edit import FileEdit
 
@@ -203,36 +203,37 @@ class Filesystem(object):
         print(new_lv_name)
         print(requested_lv_size)
 
-        # if available_vg_and_free_size:
-        #     if requested_lv_unit and free_space_in_vg_unit == "M":
-        #         if requested_lv_size < free_space_in_vg:
-        #             try:
-        #                 # LV create
-        #                 command1 = r"lvcreate -L {} -n {} {}".format(requested_lv_size, new_lv_name, vg_with_free_space)
-        #                 Popen(command1.split(), stdout=PIPE, stderr=PIPE)
-        #                 logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_free_space))
-        #
-        #                 # FS create
-        #                 command2 = r"mkfs.{} /dev/mapper/{}-{}".format(fs_type, vg_with_free_space, new_lv_name)
-        #                 Popen(command2.split(), stdout=PIPE, stderr=PIPE)
-        #                 logger.info("Filesystem {} has been created under LV {}".format(mount_name, new_lv_name))
-        #
-        #                 # Mount point create
-        #                 try:
-        #                     os.makedirs(mount_name)
-        #                     logger.info("Mountpoint {} has been created".format(mount_name))
-        #                 except CalledProcessError:
-        #                     logger.warning("Mountpoint {} already exists".format(mount_name))
-        #
-        #                 # FS tab entry
-        #                     data = "/dev/mapper/{}-{}\t{}\t{}\tdefaults\t0\t0".format(vg_with_free_space, new_lv_name, mount_name, fs_type)
-        #                     FileEdit.append_mode("/etc/fstab", data=data)
-        #
-        #                 # Mount Filesystem
-        #                 command3 = r"mount -a"
-        #                 Popen(command3.split(), stdout=PIPE, stderr=PIPE)
-        #
-        #             except Exception as e:
-        #                 print(e)
+        if available_vg_and_free_size:
+
+            if requested_lv_size < free_space_in_max_space_vg:
+
+                try:
+                    # LV create
+                    command1 = r"lvcreate -L {} -n {} {}".format(requested_lv_size, new_lv_name, vg_with_max_free_space)
+                    Popen(command1.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_max_free_space))
+
+                    # FS create
+                    command2 = r"mkfs.{} /dev/mapper/{}-{}".format(fs_type, vg_with_max_free_space, new_lv_name)
+                    Popen(command2.split(), stdout=PIPE, stderr=PIPE)
+                    logger.info("Filesystem {} has been created under LV {}".format(mount_name, new_lv_name))
+
+                    # Mount point create
+                    try:
+                        os.makedirs(mount_name)
+                        logger.info("Mountpoint {} has been created".format(mount_name))
+                    except CalledProcessError:
+                        logger.warning("Mountpoint {} already exists".format(mount_name))
+
+                    # FS tab entry
+                        data = "/dev/mapper/{}-{}\t{}\t{}\tdefaults\t0\t0".format(vg_with_max_free_space, new_lv_name, mount_name, fs_type)
+                        FileEdit.append_mode("/etc/fstab", data=data)
+
+                    # Mount Filesystem
+                    command3 = r"mount -a"
+                    Popen(command3.split(), stdout=PIPE, stderr=PIPE)
+
+                except Exception as e:
+                    print(e)
 
         # =====================================================================
