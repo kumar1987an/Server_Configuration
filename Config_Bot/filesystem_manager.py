@@ -28,7 +28,6 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-# noinspection SpellCheckingInspection
 class Filesystem(object):
 
     @staticmethod
@@ -211,16 +210,26 @@ class Filesystem(object):
                         command1 = r"lvcreate -L {} -n {} {}".format(requested_lv_size, new_lv_name, vg_with_free_space)
                         Popen(command1.split(), stdout=PIPE, stderr=PIPE)
                         logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_free_space))
+
                         # FS create
                         command2 = r"mkfs.ext4 /dev/mapper/{}-{}".format(vg_with_free_space, new_lv_name)
                         Popen(command2.split(), stdout=PIPE, stderr=PIPE)
                         logger.info("Filesystem {} has been created under LV {}".format(mount_name, new_lv_name))
+
                         # Mount point create
                         try:
                             os.makedirs(mount_name)
+                            logger.info("Mountpoint {} has been created".format(mount_name))
                         except CalledProcessError:
-                            logger.warning("Mountpoint {} has been created".format(mount_name))
+                            logger.warning("Mountpoint {} already exists".format(mount_name))
+
                         # FS tab entry
+                            data = "/dev/mapper/{}-{}\t{}\t{}\tdefaults\t0\t0".format(vg_with_free_space, new_lv_name, mount_name, fs_type)
+                            FileEdit.append_mode("/etc/fstab", data=data)
+
+                        # Mount Filesystem
+                        command3 = r"mount -a"
+                        Popen(command3.split(), stdout=PIPE, stderr=PIPE)
 
                     except Exception as e:
                         print(e)
