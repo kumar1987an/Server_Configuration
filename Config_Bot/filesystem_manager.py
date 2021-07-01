@@ -63,7 +63,7 @@ class Filesystem(object):
             return dict(zip(free_pvs, free_gbs))
 
         except CalledProcessError:
-            print("No disks found empty")
+            logger.critical("No disk found empty")
 
     @staticmethod
     def partial_vgs_check():
@@ -209,7 +209,7 @@ class Filesystem(object):
 
                 try:
                     # LV create
-                    command1 = r"lvcreate -L {} -n {} {}".format(requested_lv_size, new_lv_name, vg_with_max_free_space)
+                    command1 = r"lvcreate -L {}G -n {} {}".format(requested_lv_size, new_lv_name, vg_with_max_free_space)
                     Popen(command1.split(), stdout=PIPE, stderr=PIPE)
                     logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_max_free_space))
 
@@ -222,7 +222,7 @@ class Filesystem(object):
                     try:
                         os.makedirs(mount_name)
                         logger.info("Mountpoint {} has been created".format(mount_name))
-                    except CalledProcessError:
+                    except OSError:
                         logger.warning("Mountpoint {} already exists".format(mount_name))
 
                     # FS tab entry
