@@ -67,7 +67,7 @@ class ExecuteBot:
                 if json_loader[i]["Server"] == os.uname()[1]:
                     fs_type = json_loader[i]["Filesystem"]
                     mount_name = json_loader[i]["Mountpoint"]
-                    mount_size = json_loader[i]["Size(G or M)"]
+                    mount_size = json_loader[i]["Size(only in G)"]
                     mount_owner = json_loader[i]["Owner"]
                     mount_group = json_loader[i]["Group"]
                     mount_perm = json_loader[i]["Permission"]

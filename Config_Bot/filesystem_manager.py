@@ -71,8 +71,8 @@ class Filesystem(object):
         command2 = r"vgs | egrep -v  'root|app' | tail -n +2 | awk -F' ' '{print $NF}'"
         recently_used_vgs = check_output(command1, shell=True).split()
         freespace_on_recently_used_vgs = check_output(command2, shell=True).split()
-        tuple_for_size_and_unit = [(float(size[:-1]), size[-1].upper()) for size in freespace_on_recently_used_vgs]
-        return dict(zip(recently_used_vgs, tuple_for_size_and_unit))
+        return dict(zip(recently_used_vgs,
+                        [size[1:-1] if size[0] == "<" else size[:-1] for size in freespace_on_recently_used_vgs]))
 
     @staticmethod
     def fs_backup(filesystem):  # filesystem name as input to be backed up.
@@ -186,51 +186,53 @@ class Filesystem(object):
     def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm):
         # ======================= Working LVM create ==========================
 
-        free_disk_and_size = OrderedDict(sorted(Filesystem.unused_pvs_check().items()))  # an Ordered dictionary
+        free_disk_and_size = Filesystem.unused_pvs_check()  # a normal dictionary
         free_disk_with_max_size = max(free_disk_and_size, key=free_disk_and_size.get)
         free_pv, free_pv_size = free_disk_with_max_size, free_disk_and_size.pop(free_disk_with_max_size)
-        available_vg_free_space_and_unit = Filesystem.partial_vgs_check()  # a normal dictionary
-        unit_pattern_finder = re.search(r"[a-zA-Z]", mount_size.upper()).group()
-        vg_with_max_free_space = max(available_vg_free_space_and_unit, key=available_vg_free_space_and_unit.get)
-        vg_with_free_space, free_space_in_vg_and_unit = vg_with_max_free_space, available_vg_free_space_and_unit.pop(
-            vg_with_max_free_space)
-        free_space_in_vg = float(free_space_in_vg_and_unit[0])
-        free_space_in_vg_unit = free_space_in_vg_and_unit[1].upper()
-        requested_lv_size_and_unit = mount_size.partition(unit_pattern_finder)
-        requested_lv_size = float(requested_lv_size_and_unit[0])
-        requested_lv_unit = requested_lv_size_and_unit[1].upper()
+        available_vg_and_free_size = Filesystem.partial_vgs_check()  # a normal dictionary
+        vg_with_max_free_space = max(available_vg_and_free_size, key=available_vg_and_free_size.get)
+        free_space_in_max_space_vg = available_vg_and_free_size.pop(vg_with_max_free_space)
         new_lv_name = mount_name.split("/")[-1]
+        requested_lv_size = float(mount_size)
+        print(free_disk_and_size)
+        print(free_pv)
+        print(free_pv_size)
+        print(available_vg_and_free_size)
+        print(vg_with_max_free_space)
+        print(free_space_in_max_space_vg)
+        print(new_lv_name)
+        print(requested_lv_size)
 
-        if vg_with_free_space:
-            if requested_lv_unit and free_space_in_vg_unit == "M":
-                if requested_lv_size < free_space_in_vg:
-                    try:
-                        # LV create
-                        command1 = r"lvcreate -L {} -n {} {}".format(requested_lv_size, new_lv_name, vg_with_free_space)
-                        Popen(command1.split(), stdout=PIPE, stderr=PIPE)
-                        logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_free_space))
-
-                        # FS create
-                        command2 = r"mkfs.{} /dev/mapper/{}-{}".format(fs_type, vg_with_free_space, new_lv_name)
-                        Popen(command2.split(), stdout=PIPE, stderr=PIPE)
-                        logger.info("Filesystem {} has been created under LV {}".format(mount_name, new_lv_name))
-
-                        # Mount point create
-                        try:
-                            os.makedirs(mount_name)
-                            logger.info("Mountpoint {} has been created".format(mount_name))
-                        except CalledProcessError:
-                            logger.warning("Mountpoint {} already exists".format(mount_name))
-
-                        # FS tab entry
-                            data = "/dev/mapper/{}-{}\t{}\t{}\tdefaults\t0\t0".format(vg_with_free_space, new_lv_name, mount_name, fs_type)
-                            FileEdit.append_mode("/etc/fstab", data=data)
-
-                        # Mount Filesystem
-                        command3 = r"mount -a"
-                        Popen(command3.split(), stdout=PIPE, stderr=PIPE)
-
-                    except Exception as e:
-                        print(e)
+        # if available_vg_and_free_size:
+        #     if requested_lv_unit and free_space_in_vg_unit == "M":
+        #         if requested_lv_size < free_space_in_vg:
+        #             try:
+        #                 # LV create
+        #                 command1 = r"lvcreate -L {} -n {} {}".format(requested_lv_size, new_lv_name, vg_with_free_space)
+        #                 Popen(command1.split(), stdout=PIPE, stderr=PIPE)
+        #                 logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_free_space))
+        #
+        #                 # FS create
+        #                 command2 = r"mkfs.{} /dev/mapper/{}-{}".format(fs_type, vg_with_free_space, new_lv_name)
+        #                 Popen(command2.split(), stdout=PIPE, stderr=PIPE)
+        #                 logger.info("Filesystem {} has been created under LV {}".format(mount_name, new_lv_name))
+        #
+        #                 # Mount point create
+        #                 try:
+        #                     os.makedirs(mount_name)
+        #                     logger.info("Mountpoint {} has been created".format(mount_name))
+        #                 except CalledProcessError:
+        #                     logger.warning("Mountpoint {} already exists".format(mount_name))
+        #
+        #                 # FS tab entry
+        #                     data = "/dev/mapper/{}-{}\t{}\t{}\tdefaults\t0\t0".format(vg_with_free_space, new_lv_name, mount_name, fs_type)
+        #                     FileEdit.append_mode("/etc/fstab", data=data)
+        #
+        #                 # Mount Filesystem
+        #                 command3 = r"mount -a"
+        #                 Popen(command3.split(), stdout=PIPE, stderr=PIPE)
+        #
+        #             except Exception as e:
+        #                 print(e)
 
         # =====================================================================
