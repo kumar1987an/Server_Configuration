@@ -8,14 +8,12 @@
     First Parent Codename:  main.py
 """
 
-from file_copy import Filecopy
-import hashlib
+# Importing required libraries
 import os
 import logging
 
-# Importing required libraries
-
 # Other files importing
+from file_copy import Filecopy
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

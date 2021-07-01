@@ -7,13 +7,11 @@
 """
 
 # Importing Libraries
-
 import json
 import logging
 import os
 
 # Other files importing
-
 from file_copy import Filecopy
 from file_edit import FileEdit
 from pubkey_manager import Pubkey

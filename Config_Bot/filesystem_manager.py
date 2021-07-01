@@ -15,6 +15,7 @@ from subprocess import check_output, Popen, PIPE, call, CalledProcessError
 import re
 from collections import OrderedDict
 # Other files importing
+from file_edit import FileEdit
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -199,15 +200,29 @@ class Filesystem(object):
         requested_lv_size_and_unit = mount_size.partition(unit_pattern_finder)
         requested_lv_size = float(requested_lv_size_and_unit[0])
         requested_lv_unit = requested_lv_size_and_unit[1].upper()
+        new_lv_name = mount_name.split("/")[-1]
 
-        print("\n")
-        print("Available pv and its free size: {}\n".format(free_disk_and_size))
-        print("free physical volume: {}\n".format(free_pv))
-        print("free physical volume size: {}\n".format(free_pv_size))
-        print("requested lv size: {}\n".format(requested_lv_size))
-        print("requested lv unit: {}\n".format(requested_lv_unit))
-        print("Available vg and its free space with unit: {}\n".format(available_vg_free_space_and_unit))
-        print("vg with free space: {}\n".format(vg_with_free_space))
-        print("free space in vg: {}\n".format(free_space_in_vg))
-        print("free space in vg unit: {}\n".format(free_space_in_vg_unit))
+        if vg_with_free_space:
+            if requested_lv_unit == "M":
+                free_pv_size = free_pv_size * 1024
+                if requested_lv_size < free_pv_size:
+                    try:
+                        # LV create
+                        command1 = r"lvcreate -L {} -n {} {}".format(requested_lv_size, new_lv_name, vg_with_free_space)
+                        Popen(command1.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_free_space))
+                        # FS create
+                        command2 = r"mkfs.ext4 /dev/mapper/{}-{}".format(vg_with_free_space, new_lv_name)
+                        Popen(command2.split(), stdout=PIPE, stderr=PIPE)
+                        logger.info("Filesystem {} has been created under LV {}".format(mount_name, new_lv_name))
+                        # Mount point create
+                        try:
+                            os.makedirs(mount_name)
+                        except CalledProcessError:
+                            logger.warning("Mountpoint {} has been created".format(mount_name))
+                        # FS tab entry
+
+                    except Exception as e:
+                        print(e)
+
         # =====================================================================
