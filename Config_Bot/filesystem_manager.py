@@ -185,7 +185,7 @@ class Filesystem(object):
     @staticmethod
     def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm):
         # ======================= Working LVM create ==========================
-        # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
+
         free_disk_and_size = OrderedDict(sorted(Filesystem.unused_pvs_check().items()))  # an Ordered dictionary
         free_disk_with_max_size = max(free_disk_and_size, key=free_disk_and_size.get)
         free_pv, free_pv_size = free_disk_with_max_size, free_disk_and_size.pop(free_disk_with_max_size)
@@ -202,9 +202,8 @@ class Filesystem(object):
         new_lv_name = mount_name.split("/")[-1]
 
         if vg_with_free_space:
-            if requested_lv_unit == "M":
-                free_pv_size = free_pv_size * 1024
-                if requested_lv_size < free_pv_size:
+            if requested_lv_unit and free_space_in_vg_unit == "M":
+                if requested_lv_size < free_space_in_vg:
                     try:
                         # LV create
                         command1 = r"lvcreate -L {} -n {} {}".format(requested_lv_size, new_lv_name, vg_with_free_space)
@@ -212,7 +211,7 @@ class Filesystem(object):
                         logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_free_space))
 
                         # FS create
-                        command2 = r"mkfs.ext4 /dev/mapper/{}-{}".format(vg_with_free_space, new_lv_name)
+                        command2 = r"mkfs.{} /dev/mapper/{}-{}".format(fs_type, vg_with_free_space, new_lv_name)
                         Popen(command2.split(), stdout=PIPE, stderr=PIPE)
                         logger.info("Filesystem {} has been created under LV {}".format(mount_name, new_lv_name))
 
