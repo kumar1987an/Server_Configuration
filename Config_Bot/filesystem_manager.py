@@ -13,6 +13,7 @@ import os
 import logging
 from subprocess import check_output, Popen, PIPE, call, CalledProcessError
 import re
+from collections import OrderedDict
 # Other files importing
 
 logger = logging.getLogger(__name__)
@@ -67,10 +68,11 @@ class Filesystem(object):
     @staticmethod
     def partial_vgs_check():
         command1 = r"vgs | egrep -v  'root|app' | tail -n +2 | awk -F' ' '{print $1}'"
-        command2 = r"vgs | egrep -v  'root|app' | tail -n +2 | awk -F' ' '{print $NF}' | awk -F'.' '{print $1}'"
+        command2 = r"vgs | egrep -v  'root|app' | tail -n +2 | awk -F' ' '{print $NF}'"
         recently_used_vgs = check_output(command1, shell=True).split()
         freespace_on_recently_used_vgs = check_output(command2, shell=True).split()
-        return dict(zip(recently_used_vgs, freespace_on_recently_used_vgs))
+        tuple_for_size_and_unit = [(float(size[:-1]), size[-1].upper()) for size in freespace_on_recently_used_vgs]
+        return dict(zip(recently_used_vgs, tuple_for_size_and_unit))
 
     @staticmethod
     def fs_backup(filesystem):  # filesystem name as input to be backed up.
@@ -184,9 +186,8 @@ class Filesystem(object):
     def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm):
         # ======================= Working LVM create ==========================
         # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
-        unused_pvs_data = Filesystem.unused_pvs_check() # a dictionary
-        partial_vgs_data = Filesystem.partial_vgs_check() # a dictionary
-        print(unused_pvs_data)
-        print(partial_vgs_data)
-
+        unused_pvs_and_size = OrderedDict(sorted(Filesystem.unused_pvs_check().items()))  # a dictionary
+        partial_vgs_data = Filesystem.partial_vgs_check()  # a dictionary
+        unit_pattern_finder = re.search(r"[a-zA-Z]", mount_size.upper()).group()
+        given_mount_size_string = mount_size.partition(unit_pattern_finder)
         # =====================================================================
