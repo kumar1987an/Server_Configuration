@@ -186,8 +186,28 @@ class Filesystem(object):
     def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm):
         # ======================= Working LVM create ==========================
         # variables: fs_type, mount_name, mount_size, mount_grp, mount_owner, mount_perm
-        unused_pvs_and_size = OrderedDict(sorted(Filesystem.unused_pvs_check().items()))  # a dictionary
-        partial_vgs_data = Filesystem.partial_vgs_check()  # a dictionary
+        free_disk_and_size = OrderedDict(sorted(Filesystem.unused_pvs_check().items()))  # an Ordered dictionary
+        free_disk_with_max_size = max(free_disk_and_size, key=free_disk_and_size.get)
+        free_pv, free_pv_size = free_disk_with_max_size, free_disk_and_size.pop(free_disk_with_max_size)
+        available_vg_free_space_and_unit = Filesystem.partial_vgs_check()  # a normal dictionary
         unit_pattern_finder = re.search(r"[a-zA-Z]", mount_size.upper()).group()
-        given_mount_size_string = mount_size.partition(unit_pattern_finder)
+        vg_with_max_free_space = max(available_vg_free_space_and_unit, key=available_vg_free_space_and_unit.get)
+        vg_with_free_space, free_space_in_vg_and_unit = vg_with_max_free_space, available_vg_free_space_and_unit.pop(
+            vg_with_max_free_space)
+        free_space_in_vg = float(free_space_in_vg_and_unit[0])
+        free_space_in_vg_unit = free_space_in_vg_and_unit[1].upper()
+        requested_lv_size_and_unit = mount_size.partition(unit_pattern_finder)
+        requested_lv_size = float(requested_lv_size_and_unit[0])
+        requested_lv_unit = requested_lv_size_and_unit[1].upper()
+
+        print("\n")
+        print("Available pv and its free size: {}\n".format(free_disk_and_size))
+        print("free physical volume: {}\n".format(free_pv))
+        print("free physical volume size: {}\n".format(free_pv_size))
+        print("requested lv size: {}\n".format(requested_lv_size))
+        print("requested lv unit: {}\n".format(requested_lv_unit))
+        print("Available vg and its free space with unit: {}\n".format(available_vg_free_space_and_unit))
+        print("vg with free space: {}\n".format(vg_with_free_space))
+        print("free space in vg: {}\n".format(free_space_in_vg))
+        print("free space in vg unit: {}\n".format(free_space_in_vg_unit))
         # =====================================================================
