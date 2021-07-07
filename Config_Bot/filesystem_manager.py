@@ -11,7 +11,7 @@
 # Importing required libraries
 import os
 import logging
-from subprocess import check_output, Popen, PIPE, call, CalledProcessError
+from subprocess import check_output, check_call, Popen, PIPE, call, CalledProcessError
 import re
 from time import sleep
 
@@ -184,6 +184,39 @@ class Filesystem(object):
             """.format(vg, lv, pv))
 
     @staticmethod
+    def lvm_code_snippet(requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type):
+        # LV create
+        command1 = r"lvcreate -y -L {}G -n {}lv {}".format(requested_lv_size, new_lv_name,
+                                                           vg_with_max_free_space)
+        call(command1, shell=True)
+        logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name,
+                                                                                        vg_with_max_free_space))
+
+        sleep(3)
+        # FS create
+        command2 = r"mkfs.ext4 /dev/{}/{}lv -F".format(vg_with_max_free_space, new_lv_name)
+        call(command2, shell=True)
+        logger.info("Filesystem {} has been formatted under LV {}".format(mount_name, new_lv_name))
+
+        # Mount point create
+        if os.path.lexists(mount_name):
+            logger.warning("Mountpoint {} already exists".format(mount_name))
+        else:
+            os.makedirs(mount_name)
+            logger.info("Mountpoint {} has been created".format(mount_name))
+
+        # FS tab entry
+        data = r"/dev/mapper/{}-{}lv       {}    {}    defaults    0    0".format(
+            vg_with_max_free_space, new_lv_name, mount_name, fs_type)
+        FileEdit.append_mode("/etc/fstab", data)
+
+        # Mount Filesystem
+        command3 = r"mount -a"
+        call(command3, shell=True)
+        logging.info("Filesystem {} has been mounted successfully".format(mount_name))
+
+
+    @staticmethod
     def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm):
         # ======================= Working LVM create ==========================
 
@@ -206,36 +239,39 @@ class Filesystem(object):
 
         if available_vg_and_free_size:
             if requested_lv_size < free_space_in_max_space_vg:
-
                 try:
-                    # LV create
-                    command1 = r"lvcreate -y -L {}G -n {}lv {}".format(requested_lv_size, new_lv_name, vg_with_max_free_space)
-                    call(command1, shell=True)
-                    logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_max_free_space))
-
-                    sleep(3)
-                    # FS create
-                    command2 = r"mkfs.ext4 /dev/{}/{}lv -F".format(vg_with_max_free_space, new_lv_name)
-                    call(command2, shell=True)
-                    logger.info("Filesystem {} has been formatted under LV {}".format(mount_name, new_lv_name))
-
-                    # Mount point create
-                    if os.path.lexists(mount_name):
-                        logger.warning("Mountpoint {} already exists".format(mount_name))
-                    else:
-                        os.makedirs(mount_name)
-                        logger.info("Mountpoint {} has been created".format(mount_name))
-
-                    # FS tab entry
-                    data = r"/dev/mapper/{}-{}lv       {}    {}    defaults    0    0".format(vg_with_max_free_space, new_lv_name, mount_name, fs_type)
-                    FileEdit.append_mode("/etc/fstab", data)
-
-                    # Mount Filesystem
-                    command3 = r"mount -a"
-                    call(command3, shell=True)
-                    logging.info("Filesystem {} has been mounted successfully".format(mount_name))
+                    Filesystem.lvm_code_snippet(requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type)
 
                 except Exception as e:
                     print(e)
+
+        elif free_disk_and_size:
+            try:
+                command1 = r"df -h | grep -i {}".format(mount_name)
+                check_call(command1.split(), stdout=PIPE, stderr=PIPE)
+                logger.warning("Filesystem {} already exists on existing vg {}".format(mount_name, vg_with_max_free_space))
+
+            except CalledProcessError:
+                if requested_lv_size <= free_pv_size:
+                    try:
+                        # PV create
+                        command1 = r"pvcreate {}".format(free_pv)
+                        call(command1, shell=True)
+                        logger.info("PV {} has been created".format(free_pv))
+
+                        # VG Create
+                        command2 = r"vgs | grep -i appvg | awk -F' ' '{print $1}'"
+                        child2 = check_output(command2.split())
+                        vgname_pattern = re.compile(r"\d")
+                        maxvg_number = max([int(match.group()) for match in vgname_pattern.finditer(child2)])
+                        command3 = r"vgcreate "
+
+                        Filesystem.lvm_code_snippet(requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type)
+
+                    except Exception as e:
+                        print(e)
+
+
+
 
         # =====================================================================
