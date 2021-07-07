@@ -209,7 +209,7 @@ class Filesystem(object):
 
                 try:
                     # LV create
-                    command1 = r"lvcreate -f -L {}G -n {}lv {}".format(requested_lv_size, new_lv_name, vg_with_max_free_space)
+                    command1 = r"lvcreate -y -L {}G -n {}lv {}".format(requested_lv_size, new_lv_name, vg_with_max_free_space)
                     call(command1, shell=True)
                     logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_max_free_space))
 
