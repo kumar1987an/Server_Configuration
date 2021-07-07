@@ -71,7 +71,8 @@ class Filesystem(object):
         command1 = r"vgs | egrep -v  'root|app' | tail -n +2 | awk -F' ' '{print $1}'"
         command2 = r"vgs | egrep -v  'root|app' | tail -n +2 | awk -F' ' '{print $NF}'"
         recently_used_vgs = check_output(command1, shell=True).split()
-        freespace_on_recently_used_vgs = check_output(command2, shell=True).split()
+        freespace_on_recently_used_vgs = check_output(
+            command2, shell=True).split()
         return dict(zip(recently_used_vgs,
                         [size[1:-1] if size[0] == "<" else size[:-1] for size in freespace_on_recently_used_vgs]))
 
@@ -194,9 +195,11 @@ class Filesystem(object):
 
         sleep(3)
         # FS create
-        command2 = r"mkfs.ext4 /dev/{}/{}lv -F".format(vg_with_max_free_space, new_lv_name)
+        command2 = r"mkfs.ext4 /dev/{}/{}lv -F".format(
+            vg_with_max_free_space, new_lv_name)
         call(command2, shell=True)
-        logger.info("Filesystem {} has been formatted under LV {}".format(mount_name, new_lv_name))
+        logger.info("Filesystem {} has been formatted under LV {}".format(
+            mount_name, new_lv_name))
 
         # Mount point create
         if os.path.lexists(mount_name):
@@ -213,18 +216,23 @@ class Filesystem(object):
         # Mount Filesystem
         command3 = r"mount -a"
         call(command3, shell=True)
-        logging.info("Filesystem {} has been mounted successfully".format(mount_name))
+        logging.info(
+            "Filesystem {} has been mounted successfully".format(mount_name))
 
     @staticmethod
     def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm):
         # ======================= Working LVM create ==========================
 
         free_disk_and_size = Filesystem.unused_pvs_check()  # a normal dictionary
-        free_disk_with_max_size = max(free_disk_and_size, key=free_disk_and_size.get)
-        free_pv, free_pv_size = free_disk_with_max_size, free_disk_and_size.pop(free_disk_with_max_size)
+        free_disk_with_max_size = max(
+            free_disk_and_size, key=free_disk_and_size.get)
+        free_pv, free_pv_size = free_disk_with_max_size, free_disk_and_size.pop(
+            free_disk_with_max_size)
         available_vg_and_free_size = Filesystem.partial_vgs_check()  # a normal dictionary
-        vg_with_max_free_space = max(available_vg_and_free_size, key=available_vg_and_free_size.get)
-        free_space_in_max_space_vg = available_vg_and_free_size.pop(vg_with_max_free_space)
+        vg_with_max_free_space = max(
+            available_vg_and_free_size, key=available_vg_and_free_size.get)
+        free_space_in_max_space_vg = available_vg_and_free_size.pop(
+            vg_with_max_free_space)
         new_lv_name = mount_name.split("/")[-1]
         requested_lv_size = float(mount_size)
         # print(free_disk_and_size)
@@ -239,7 +247,8 @@ class Filesystem(object):
         if available_vg_and_free_size:
             if requested_lv_size < free_space_in_max_space_vg:
                 try:
-                    Filesystem.lvm_code_snippet(requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type)
+                    Filesystem.lvm_code_snippet(
+                        requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type)
 
                 except Exception as e:
                     print(e)
@@ -248,7 +257,8 @@ class Filesystem(object):
             try:
                 command1 = r"df -h | grep -i {}".format(mount_name)
                 check_call(command1.split(), stdout=PIPE, stderr=PIPE)
-                logger.warning("Filesystem {} already exists on existing vg {}".format(mount_name, vg_with_max_free_space))
+                logger.warning("Filesystem {} already exists on existing vg {}".format(
+                    mount_name, vg_with_max_free_space))
 
             except CalledProcessError:
                 if requested_lv_size <= free_pv_size:
@@ -261,25 +271,30 @@ class Filesystem(object):
                         # VG Create
                         command2 = r"vgs | grep -i appvg | awk -F' ' '{print $1}' | tail -n +2"
                         child2 = check_output(command2, shell=True)
-                        fully_used_vg_list = child2.split("\n")[0:-1][::-1]
                         vgname_pattern = re.compile(r"\d", re.MULTILINE)
                         try:
-                            maxvg_number = max([int(match.group()) for match in vgname_pattern.finditer(child2)])
+                            maxvg_number = max(
+                                [int(match.group()) for match in vgname_pattern.finditer(child2)])
                             if maxvg_number:
                                 # vgcreate appvg{maxvg_number+2} free_pv
                                 vgname = "appvg{}".format(maxvg_number+1)
-                                command3 = r"vgcreate {} {}".format(vgname, free_pv)
+                                command3 = r"vgcreate {} {}".format(
+                                    vgname, free_pv)
                                 call(command3, shell=True)
-                                logger.info("VG {} has been created on top of {}".format(vgname, free_pv))
+                                logger.info(
+                                    "VG {} has been created on top of {}".format(vgname, free_pv))
 
                         except ValueError:
                             maxvg_number = 1
                             vgname = "appvg{}".format(maxvg_number)
-                            command4 = r"vgcreate {} {}".format(vgname, free_pv)
+                            command4 = r"vgcreate {} {}".format(
+                                vgname, free_pv)
                             call(command4, shell=True)
-                            logger.info("VG {} has been created on top of {}".format(vgname, free_pv))
+                            logger.info(
+                                "VG {} has been created on top of {}".format(vgname, free_pv))
 
-                        Filesystem.lvm_code_snippet(requested_lv_size, new_lv_name, vgname, mount_name, fs_type)
+                        Filesystem.lvm_code_snippet(
+                            requested_lv_size, new_lv_name, vgname, mount_name, fs_type)
 
                     except Exception as e:
                         print(e)
