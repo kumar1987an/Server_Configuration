@@ -30,7 +30,6 @@ logger.addHandler(stream_handler)
 
 
 class Filesystem(object):
-
     @staticmethod
     def disk_scan():
         logger.debug(" Proceeding system wide disk scan")
@@ -57,8 +56,14 @@ class Filesystem(object):
             else:
                 used_disks = used_disks + matches[index] + "|"
         try:
-            command2 = r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $2}'|awk -F':' '{print $1}'" % used_disks
-            command3 = r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $3}'" % used_disks
+            command2 = (
+                r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $2}'|awk -F':' '{print $1}'"
+                % used_disks
+            )
+            command3 = (
+                r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $3}'"
+                % used_disks
+            )
             free_pvs = check_output(command2, shell=True).split()
             free_gbs = check_output(command3, shell=True).split()
             return dict(zip(free_pvs, free_gbs))
@@ -68,22 +73,34 @@ class Filesystem(object):
 
     @staticmethod
     def partial_vgs_check():
-        command1 = r"vgs | egrep -v  'root|app' | tail -n +2 | awk -F' ' '{print $1}'"
-        command2 = r"vgs | egrep -v  'root|app' | tail -n +2 | awk -F' ' '{print $NF}'"
+        command1 = r"vgs | egrep -v  'root' | tail -n +2 | awk -F' ' '{print $1}'"
+        command2 = r"vgs | egrep -v  'root' | tail -n +2 | awk -F' ' '{print $NF}'"
         recently_used_vgs = check_output(command1, shell=True).split()
         freespace_on_recently_used_vgs = check_output(
             command2, shell=True).split()
-        return dict(zip(recently_used_vgs,
-                        [size[1:-1] if size[0] == "<" else size[:-1] for size in freespace_on_recently_used_vgs]))
+        return dict(
+            zip(
+                recently_used_vgs,
+                [
+                    size[1:-1] if size[0] == "<" else size[:-1]
+                    for size in freespace_on_recently_used_vgs
+                ],
+            )
+        )
 
     @staticmethod
     def fs_backup(filesystem):  # filesystem name as input to be backed up.
         logger.info(" Filesystem {} backup Started".format(filesystem))
         dir_name = filesystem.split("/")[3]
-        Popen(r"tar -cvf /var/tmp/{}.tar {}".format(dir_name,
-                                                    filesystem).split(), stdout=PIPE, stderr=PIPE)
+        Popen(
+            r"tar -cvf /var/tmp/{}.tar {}".format(dir_name,
+                                                  filesystem).split(),
+            stdout=PIPE,
+            stderr=PIPE,
+        )
         tar_check = call(
-            r"ls /var/tmp/{}.tar".format(dir_name).split(), stdout=PIPE, stderr=PIPE)
+            r"ls /var/tmp/{}.tar".format(dir_name).split(), stdout=PIPE, stderr=PIPE
+        )
 
         if tar_check == 0:
 
@@ -91,7 +108,8 @@ class Filesystem(object):
 
         else:
             logger.critical(
-                " Filesystem backup not happened please login to the system and verify")
+                " Filesystem backup not happened please login to the system and verify"
+            )
 
     @staticmethod
     def lvm_full_scan_template():
@@ -106,8 +124,8 @@ class Filesystem(object):
 
     @staticmethod
     def check_and_wipeoutlvm(percentage_used, filesystem_used, lv_vg_pv_used):
-        """ This function will perform various LVM Operations like
-        VG, LV, PS and FS level including backup and LVM removal """
+        """This function will perform various LVM Operations like
+        VG, LV, PS and FS level including backup and LVM removal"""
 
         logger.info(" =========== LVM Operation Started =========== ")
         for ps, fs, metadata in zip(percentage_used, filesystem_used, lv_vg_pv_used):
@@ -116,7 +134,8 @@ class Filesystem(object):
             pv = metadata.split()[2]
 
             logger.warning(
-                " Proceeding with app data LVM wipeout if FS, LV, VG, PV available")
+                " Proceeding with app data LVM wipeout if FS, LV, VG, PV available"
+            )
             if ps in ["1%", "2%", "3%", "4%", "5%"]:
 
                 Filesystem().fs_backup(fs)  # Backup function call
@@ -142,12 +161,13 @@ class Filesystem(object):
                 try:
                     command4 = r"vgchange -an %s" % vg
                     Popen(command4.split(), stdout=PIPE, stderr=PIPE)
-                    logger.info(
-                        " VG {} state changed to offline".format(vg))
+                    logger.info(" VG {} state changed to offline".format(vg))
                     command5 = r"vgremove %s" % vg
                     Popen(command5.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(
-                        " VG {} has been removed from system completely".format(vg))
+                        " VG {} has been removed from system completely".format(
+                            vg)
+                    )
 
                 except Exception as e:
                     print(e)
@@ -156,7 +176,8 @@ class Filesystem(object):
                     command6 = r"pvremove %s" % pv
                     Popen(command6.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(
-                        " PV(s) {} has been removed from system completely".format(pv))
+                        " PV(s) {} has been removed from system completely".format(pv)
+                    )
 
                 except Exception as e:
                     print(e)
@@ -164,8 +185,12 @@ class Filesystem(object):
                 logger.warning(" Completed with app data LVM wipeout")
 
             else:
-                logger.critical("{} is more than 5% occupied please perform \
-                                    FS backup manually and re-run the program".format(fs))
+                logger.critical(
+                    "{} is more than 5% occupied please perform \
+                                    FS backup manually and re-run the program".format(
+                        fs
+                    )
+                )
 
         logger.info(" =========== LVM Operation Completed =========== ")
 
@@ -177,62 +202,93 @@ class Filesystem(object):
             vg = metadata.split()[1]
             pv = metadata.split()[2]
 
-            logger.critical("""
+            logger.critical(
+                """
             These are the LVMs still in use without required filesystems 
             VG: {}
             LV: {}
             PV: {}
-            """.format(vg, lv, pv))
+            """.format(
+                    vg, lv, pv
+                )
+            )
 
     @staticmethod
-    def lvm_code_snippet(requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type):
-        # LV create
-        command1 = r"lvcreate -y -L {}G -n {}lv {}".format(requested_lv_size, new_lv_name,
-                                                           vg_with_max_free_space)
-        call(command1, shell=True)
-        logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name,
-                                                                                        vg_with_max_free_space))
+    def lvm_code_snippet(
+        requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type
+    ):
+        try:
 
-        sleep(3)
-        # FS create
-        command2 = r"mkfs.ext4 /dev/{}/{}lv -F".format(
-            vg_with_max_free_space, new_lv_name)
-        call(command2, shell=True)
-        logger.info("Filesystem {} has been formatted under LV {}".format(
-            mount_name, new_lv_name))
+            # LV create
+            command1 = r"lvcreate -y -L {}G -n {}lv {}".format(
+                requested_lv_size, new_lv_name, vg_with_max_free_space
+            )
+            call(command1, shell=True)
+            logger.info(
+                "LV {} has been created under volumen group {} successfully".format(
+                    new_lv_name, vg_with_max_free_space
+                )
+            )
 
-        # Mount point create
-        if os.path.lexists(mount_name):
-            logger.warning("Mountpoint {} already exists".format(mount_name))
-        else:
-            os.makedirs(mount_name)
-            logger.info("Mountpoint {} has been created".format(mount_name))
+            sleep(3)
+            # FS create
+            command2 = r"mkfs.ext4 /dev/{}/{}lv -F".format(
+                vg_with_max_free_space, new_lv_name
+            )
+            call(command2, shell=True)
+            logger.info(
+                "Filesystem {} has been formatted under LV {}".format(
+                    mount_name, new_lv_name
+                )
+            )
 
-        # FS tab entry
-        data = r"/dev/mapper/{}-{}lv       {}    {}    defaults    0    0".format(
-            vg_with_max_free_space, new_lv_name, mount_name, fs_type)
-        FileEdit.append_mode("/etc/fstab", data)
+            # Mount point create
+            if os.path.lexists(mount_name):
+                logger.warning(
+                    "Mountpoint {} already exists".format(mount_name))
+            else:
+                os.makedirs(mount_name)
+                logger.info(
+                    "Mountpoint {} has been created".format(mount_name))
 
-        # Mount Filesystem
-        command3 = r"mount -a"
-        call(command3, shell=True)
-        logging.info(
-            "Filesystem {} has been mounted successfully".format(mount_name))
+            # FS tab entry
+            data = r"/dev/{}/{}lv       {}    {}    defaults    0    0".format(
+                vg_with_max_free_space, new_lv_name, mount_name, fs_type
+            )
+            FileEdit.append_mode("/etc/fstab", data)
+
+            sleep(3)
+
+            # Mount Filesystem
+            command3 = r"mount -a"
+            call(command3, shell=True)
+            logging.info(
+                "Filesystem {} has been mounted successfully".format(mount_name))
+
+        except Exception as e:
+            print(e)
 
     @staticmethod
-    def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm):
+    def lvm_operation(
+        fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm
+    ):
         # ======================= Working LVM create ==========================
 
         free_disk_and_size = Filesystem.unused_pvs_check()  # a normal dictionary
         free_disk_with_max_size = max(
             free_disk_and_size, key=free_disk_and_size.get)
         free_pv, free_pv_size = free_disk_with_max_size, free_disk_and_size.pop(
-            free_disk_with_max_size)
-        available_vg_and_free_size = Filesystem.partial_vgs_check()  # a normal dictionary
+            free_disk_with_max_size
+        )
+        available_vg_and_free_size = (
+            Filesystem.partial_vgs_check()
+        )  # a normal dictionary
         vg_with_max_free_space = max(
-            available_vg_and_free_size, key=available_vg_and_free_size.get)
+            available_vg_and_free_size, key=available_vg_and_free_size.get
+        )
         free_space_in_max_space_vg = available_vg_and_free_size.pop(
-            vg_with_max_free_space)
+            vg_with_max_free_space
+        )
         new_lv_name = mount_name.split("/")[-1]
         requested_lv_size = float(mount_size)
         # print(free_disk_and_size)
@@ -246,19 +302,23 @@ class Filesystem(object):
 
         if available_vg_and_free_size:
             if requested_lv_size < free_space_in_max_space_vg:
-                try:
-                    Filesystem.lvm_code_snippet(
-                        requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type)
-
-                except Exception as e:
-                    print(e)
+                Filesystem.lvm_code_snippet(
+                    requested_lv_size,
+                    new_lv_name,
+                    vg_with_max_free_space,
+                    mount_name,
+                    fs_type,
+                )
 
         elif free_disk_and_size:
             try:
                 command1 = r"df -h | grep -i {}".format(mount_name)
                 check_call(command1.split(), stdout=PIPE, stderr=PIPE)
-                logger.warning("Filesystem {} already exists on existing vg {}".format(
-                    mount_name, vg_with_max_free_space))
+                logger.warning(
+                    "Filesystem {} already exists on existing vg {}".format(
+                        mount_name, vg_with_max_free_space
+                    )
+                )
 
             except CalledProcessError:
                 if requested_lv_size <= free_pv_size:
@@ -269,32 +329,39 @@ class Filesystem(object):
                         logger.info("PV {} has been created".format(free_pv))
 
                         # VG Create
-                        command2 = r"vgs | grep -i appvg | awk -F' ' '{print $1}' | tail -n +2"
+                        command2 = r"vgs | egrep -v root | awk -F' ' '{print $1}'|tail -n +2"
                         child2 = check_output(command2, shell=True)
                         vgname_pattern = re.compile(r"\d", re.MULTILINE)
+
                         try:
-                            maxvg_number = max(
-                                [int(match.group()) for match in vgname_pattern.finditer(child2)])
+                            maxvg_number = max([int(match.group())
+                                                for match in vgname_pattern.finditer(child2)])
                             if maxvg_number:
-                                # vgcreate appvg{maxvg_number+2} free_pv
-                                vgname = "appvg{}".format(maxvg_number+1)
+                                vgname = "appvg{}".format(maxvg_number + 1)
                                 command3 = r"vgcreate {} {}".format(
                                     vgname, free_pv)
                                 call(command3, shell=True)
                                 logger.info(
-                                    "VG {} has been created on top of {}".format(vgname, free_pv))
+                                    "VG {} has been created on top of {}".format(
+                                        vgname, free_pv
+                                    )
+                                )
 
-                        except ValueError:
+                        except:
                             maxvg_number = 1
                             vgname = "appvg{}".format(maxvg_number)
                             command4 = r"vgcreate {} {}".format(
                                 vgname, free_pv)
                             call(command4, shell=True)
                             logger.info(
-                                "VG {} has been created on top of {}".format(vgname, free_pv))
+                                "VG {} has been created on top of {}".format(
+                                    vgname, free_pv
+                                )
+                            )
 
                         Filesystem.lvm_code_snippet(
-                            requested_lv_size, new_lv_name, vgname, mount_name, fs_type)
+                            requested_lv_size, new_lv_name, vgname, mount_name, fs_type
+                        )
 
                     except Exception as e:
                         print(e)
