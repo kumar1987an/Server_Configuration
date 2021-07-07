@@ -13,6 +13,7 @@ import os
 import logging
 from subprocess import check_output, Popen, PIPE, call, CalledProcessError
 import re
+from time import sleep
 
 # Other files importing
 from file_edit import FileEdit
@@ -194,14 +195,14 @@ class Filesystem(object):
         free_space_in_max_space_vg = available_vg_and_free_size.pop(vg_with_max_free_space)
         new_lv_name = mount_name.split("/")[-1]
         requested_lv_size = float(mount_size)
-        print(free_disk_and_size)
-        print(free_pv)
-        print(free_pv_size)
-        print(available_vg_and_free_size)
-        print(vg_with_max_free_space)
-        print(free_space_in_max_space_vg)
-        print(new_lv_name)
-        print(requested_lv_size)
+        # print(free_disk_and_size)
+        # print(free_pv)
+        # print(free_pv_size)
+        # print(available_vg_and_free_size)
+        # print(vg_with_max_free_space)
+        # print(free_space_in_max_space_vg)
+        # print(new_lv_name)
+        # print(requested_lv_size)
 
         if available_vg_and_free_size:
             if requested_lv_size < free_space_in_max_space_vg:
@@ -209,13 +210,14 @@ class Filesystem(object):
                 try:
                     # LV create
                     command1 = r"lvcreate -L {}G -n {}lv {}".format(requested_lv_size, new_lv_name, vg_with_max_free_space)
-                    Popen(command1.split(), stdout=PIPE, stderr=PIPE)
+                    call(command1, shell=True)
                     logger.info("LV {} has been created under volumen group {} successfully".format(new_lv_name, vg_with_max_free_space))
 
+                    sleep(3)
                     # FS create
-                    command2 = r"mkfs.{} /dev/mapper/{}-{}lv".format(fs_type, vg_with_max_free_space, new_lv_name)
-                    Popen(command2.split(), stdout=PIPE, stderr=PIPE)
-                    logger.info("Filesystem {} has been created under LV {}".format(mount_name, new_lv_name))
+                    command2 = r"mkfs.ext4 /dev/{}/{}lv -F".format(vg_with_max_free_space, new_lv_name)
+                    call(command2, shell=True)
+                    logger.info("Filesystem {} has been formatted under LV {}".format(mount_name, new_lv_name))
 
                     # Mount point create
                     if os.path.lexists(mount_name):
@@ -225,14 +227,13 @@ class Filesystem(object):
                         logger.info("Mountpoint {} has been created".format(mount_name))
 
                     # FS tab entry
-                    data = r"/dev/mapper/{}-{}lv    {}  {}  defaults    0 0".format(vg_with_max_free_space, new_lv_name, mount_name, fs_type)
-                    FileEdit.append_mode("/etc/fstab", data=data)
+                    data = r"/dev/mapper/{}-{}lv       {}    {}    defaults    0    0".format(vg_with_max_free_space, new_lv_name, mount_name, fs_type)
+                    FileEdit.append_mode("/etc/fstab", data)
 
                     # Mount Filesystem
                     command3 = r"mount -a"
-                    call3 = Popen(command3.split(), stdout=PIPE, stderr=PIPE)
-                    if call3.returncode == 0:
-                        logging.info("Filesystem {} has been mounted successfully".format(mount_name))
+                    call(command3, shell=True)
+                    logging.info("Filesystem {} has been mounted successfully".format(mount_name))
 
                 except Exception as e:
                     print(e)
