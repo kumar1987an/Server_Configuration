@@ -215,7 +215,6 @@ class Filesystem(object):
         call(command3, shell=True)
         logging.info("Filesystem {} has been mounted successfully".format(mount_name))
 
-
     @staticmethod
     def lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm):
         # ======================= Working LVM create ==========================
@@ -260,18 +259,28 @@ class Filesystem(object):
                         logger.info("PV {} has been created".format(free_pv))
 
                         # VG Create
-                        command2 = r"vgs | grep -i appvg | awk -F' ' '{print $1}'"
-                        child2 = check_output(command2.split())
-                        vgname_pattern = re.compile(r"\d")
-                        maxvg_number = max([int(match.group()) for match in vgname_pattern.finditer(child2)])
-                        command3 = r"vgcreate "
+                        command2 = r"vgs | grep -i appvg | awk -F' ' '{print $1}' | tail -n +2"
+                        child2 = check_output(command2, shell=True)
+                        fully_used_vg_list = child2.split("\n")[0:-1][::-1]
+                        vgname_pattern = re.compile(r"\d", re.MULTILINE)
+                        try:
+                            maxvg_number = max([int(match.group()) for match in vgname_pattern.finditer(child2)])
+                            if maxvg_number:
+                                # vgcreate appvg{maxvg_number+2} free_pv
+                                vgname = "appvg{}".format(maxvg_number+1)
+                                command3 = r"vgcreate {} {}".format(vgname, free_pv)
+                                call(command3, shell=True)
+                                logger.info("VG {} has been created on top of {}".format(vgname, free_pv))
 
-                        Filesystem.lvm_code_snippet(requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type)
+                        except ValueError:
+                            maxvg_number = 1
+                            vgname = "appvg{}".format(maxvg_number)
+                            command4 = r"vgcreate {} {}".format(vgname, free_pv)
+                            call(command4, shell=True)
+                            logger.info("VG {} has been created on top of {}".format(vgname, free_pv))
+
+                        Filesystem.lvm_code_snippet(requested_lv_size, new_lv_name, vgname, mount_name, fs_type)
 
                     except Exception as e:
                         print(e)
-
-
-
-
         # =====================================================================
