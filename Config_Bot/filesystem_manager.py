@@ -223,9 +223,9 @@ class Filesystem(object):
             command1 = r"lvcreate -y -L {}G -n {}lv {}".format(
                 requested_lv_size, new_lv_name, vg_with_max_free_space
             )
-            call(command1, shell=True)
+            check_call(command1, shell=True)
             logger.info(
-                "LV {} has been created under volumen group {} successfully".format(
+                "LV {}lv has been created under volumen group {} successfully".format(
                     new_lv_name, vg_with_max_free_space
                 )
             )
@@ -235,12 +235,18 @@ class Filesystem(object):
             command2 = r"mkfs.ext4 /dev/{}/{}lv -F".format(
                 vg_with_max_free_space, new_lv_name
             )
-            call(command2, shell=True)
+            check_call(command2, shell=True)
             logger.info(
                 "Filesystem {} has been formatted under LV {}".format(
                     mount_name, new_lv_name
                 )
             )
+
+        except CalledProcessError:
+            logger.warning(
+                "LV {}lv is already exists in LVM please check the server manually for FS not found".format(new_lv_name))
+
+        else:
 
             # Mount point create
             if os.path.lexists(mount_name):
@@ -265,9 +271,6 @@ class Filesystem(object):
             logging.info(
                 "Filesystem {} has been mounted successfully".format(mount_name))
 
-        except Exception as e:
-            print(e)
-
     @staticmethod
     def lvm_operation(
         fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm
@@ -291,20 +294,12 @@ class Filesystem(object):
         )
         new_lv_name = mount_name.split("/")[-1]
         requested_lv_size = float(mount_size)
-        # print(free_disk_and_size)
-        # print(free_pv)
-        # print(free_pv_size)
-        # print(available_vg_and_free_size)
-        # print(vg_with_max_free_space)
-        # print(free_space_in_max_space_vg)
-        # print(new_lv_name)
-        # print(requested_lv_size)
 
         if available_vg_and_free_size:
 
             try:
                 command1 = r"df -h | grep -i {}".format(mount_name)
-                check_call(command1.split(), stdout=PIPE, stderr=PIPE)
+                check_call(command1, shell=True)
                 logger.warning(
                     "Filesystem {} already exists on existing vg {}".format(
                         mount_name, vg_with_max_free_space
@@ -369,9 +364,9 @@ class Filesystem(object):
                                 )
                             )
 
-                        Filesystem.lvm_code_snippet(
-                            requested_lv_size, new_lv_name, vgname, mount_name, fs_type
-                        )
+                        finally:
+                            Filesystem.lvm_code_snippet(
+                                requested_lv_size, new_lv_name, vgname, mount_name, fs_type)
 
                     except Exception as e:
                         print(e)
