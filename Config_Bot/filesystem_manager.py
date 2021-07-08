@@ -301,14 +301,24 @@ class Filesystem(object):
         # print(requested_lv_size)
 
         if available_vg_and_free_size:
-            if requested_lv_size < free_space_in_max_space_vg:
-                Filesystem.lvm_code_snippet(
-                    requested_lv_size,
-                    new_lv_name,
-                    vg_with_max_free_space,
-                    mount_name,
-                    fs_type,
+
+            try:
+                command1 = r"df -h | grep -i {}".format(mount_name)
+                check_call(command1.split(), stdout=PIPE, stderr=PIPE)
+                logger.warning(
+                    "Filesystem {} already exists on existing vg {}".format(
+                        mount_name, vg_with_max_free_space
+                    )
                 )
+            except CalledProcessError:
+                if requested_lv_size < free_space_in_max_space_vg:
+                    Filesystem.lvm_code_snippet(
+                        requested_lv_size,
+                        new_lv_name,
+                        vg_with_max_free_space,
+                        mount_name,
+                        fs_type,
+                    )
 
         elif free_disk_and_size:
             try:
