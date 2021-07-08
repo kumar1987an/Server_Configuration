@@ -10,6 +10,7 @@
 
 # Importing required libraries
 import os
+import pwd
 import logging
 from subprocess import check_output, check_call, Popen, PIPE, call, CalledProcessError
 import re
@@ -215,7 +216,7 @@ class Filesystem(object):
 
     @staticmethod
     def lvm_code_snippet(
-        requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type
+        requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type, mount_owner, mount_group, mount_perm
     ):
         try:
 
@@ -280,6 +281,11 @@ class Filesystem(object):
             logging.info(
                 "Filesystem {} has been mounted successfully".format(mount_name))
 
+            try:
+                pwd.getpwnam(mount_owner)
+            except:
+                pass
+
     @staticmethod
     def lvm_operation(
         fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm
@@ -321,6 +327,9 @@ class Filesystem(object):
                         vg_with_max_free_space,
                         mount_name,
                         fs_type,
+                        mount_owner,
+                        mount_group,
+                        mount_perm
                     )
 
         elif free_disk_and_size:
@@ -374,7 +383,7 @@ class Filesystem(object):
 
                         finally:
                             Filesystem.lvm_code_snippet(
-                                requested_lv_size, new_lv_name, vgname, mount_name, fs_type)
+                                requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type, mount_owner, mount_group, mount_perm)
 
                     except Exception as e:
                         print(e)
