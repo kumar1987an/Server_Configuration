@@ -283,8 +283,24 @@ class Filesystem(object):
 
             try:
                 pwd.getpwnam(mount_owner)
-            except:
-                pass
+            except Exception as e:
+                print(e)
+            else:
+                try:
+                    os.chown(mount_name, pwd.getpwnam(
+                        mount_owner).pw_uid, pwd.getpwnam(mount_owner).pw_gid)
+                    logger.info(" Filesystem {} has been changed to {}:{} user group".format(
+                        mount_name, mount_owner, mount_group))
+                except Exception as e:
+                    print(e)
+                else:
+                    command5 = r"chmod {} {}".format(mount_perm, mount_name)
+                    check_call(command5, shell=True)
+                    logger.info(" Filesystem {} has been changed to {} requested permission".format(
+                        mount_name, mount_perm))
+            finally:
+                logger.info(
+                    "================= LVM configuration Completed =================")
 
     @staticmethod
     def lvm_operation(
