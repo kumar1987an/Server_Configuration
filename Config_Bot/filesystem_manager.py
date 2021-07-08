@@ -275,7 +275,6 @@ class Filesystem(object):
     def lvm_operation(
         fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm
     ):
-        # ======================= Working LVM create ==========================
 
         free_disk_and_size = Filesystem.unused_pvs_check()  # a normal dictionary
         free_disk_with_max_size = max(
@@ -370,4 +369,3 @@ class Filesystem(object):
 
                     except Exception as e:
                         print(e)
-        # =====================================================================
