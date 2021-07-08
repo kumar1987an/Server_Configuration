@@ -257,17 +257,26 @@ class Filesystem(object):
                 logger.info(
                     "Mountpoint {} has been created".format(mount_name))
 
-            # FS tab entry
-            data = r"/dev/{}/{}lv       {}    {}    defaults    0    0".format(
-                vg_with_max_free_space, new_lv_name, mount_name, fs_type
-            )
-            FileEdit.append_mode("/etc/fstab", data)
+            # FS entry check
+            with open("/etc/fstab", "r") as fsentry:
+                fsdata = fsentry.read()
+                pattern = re.compile(r"{}".format(mount_name))
+
+                if pattern.search(fsdata):
+                    logger.warning(
+                        "Filesystem entry already exists in /etc/fstab file")
+                else:
+                    # FS tab entry
+                    data = r"/dev/{}/{}lv       {}    {}    defaults    0    0".format(
+                        vg_with_max_free_space, new_lv_name, mount_name, fs_type
+                    )
+                    FileEdit.append_mode("/etc/fstab", data)
 
             sleep(3)
 
             # Mount Filesystem
-            command3 = r"mount -a"
-            call(command3, shell=True)
+            command4 = r"mount -a"
+            call(command4, shell=True)
             logging.info(
                 "Filesystem {} has been mounted successfully".format(mount_name))
 
@@ -328,23 +337,23 @@ class Filesystem(object):
                 if requested_lv_size <= free_pv_size:
                     try:
                         # PV create
-                        command1 = r"pvcreate {}".format(free_pv)
-                        call(command1, shell=True)
+                        command2 = r"pvcreate {}".format(free_pv)
+                        call(command2, shell=True)
                         logger.info("PV {} has been created".format(free_pv))
 
                         # VG Create
-                        command2 = r"vgs | egrep -v root | awk -F' ' '{print $1}'|tail -n +2"
-                        child2 = check_output(command2, shell=True)
+                        command3 = r"vgs | egrep -v root | awk -F' ' '{print $1}'|tail -n +2"
+                        child3 = check_output(command3, shell=True)
                         vgname_pattern = re.compile(r"\d", re.MULTILINE)
 
                         try:
                             maxvg_number = max([int(match.group())
-                                                for match in vgname_pattern.finditer(child2)])
+                                                for match in vgname_pattern.finditer(child3)])
                             if maxvg_number:
                                 vgname = "appvg{}".format(maxvg_number + 1)
-                                command3 = r"vgcreate {} {}".format(
+                                command4 = r"vgcreate {} {}".format(
                                     vgname, free_pv)
-                                call(command3, shell=True)
+                                call(command4, shell=True)
                                 logger.info(
                                     "VG {} has been created on top of {}".format(
                                         vgname, free_pv
@@ -354,9 +363,9 @@ class Filesystem(object):
                         except:
                             maxvg_number = 1
                             vgname = "appvg{}".format(maxvg_number)
-                            command4 = r"vgcreate {} {}".format(
+                            command5 = r"vgcreate {} {}".format(
                                 vgname, free_pv)
-                            call(command4, shell=True)
+                            call(command5, shell=True)
                             logger.info(
                                 "VG {} has been created on top of {}".format(
                                     vgname, free_pv
