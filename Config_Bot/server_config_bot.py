@@ -38,8 +38,39 @@ class ExecuteBot:
 
         path = "/dummyfs/%s" % self.user
 
+        # This segment of code is for user groups related executions on requested server
+
+        try:
+
+            with open(
+                os.path.join(path, "usergroups.json")
+            ) as json_file:  # opening json file to read its contents and save into a variable
+                json_loader = json.loads(json_file.read())
+
+            # For Copying required file for User/Group change related operations
+            logger.info(" ---------- File backup started ----------")
+            Filecopy.backup("/etc/passwd")
+            Filecopy.backup("/etc/group")
+            Filecopy.backup("/etc/shadow", Type="secured")
+            logger.info(" ---------- File backup Completed ----------")
+
+            for i in range(len(json_loader)):
+                if json_loader[i]["Server"] == os.uname()[1]:
+                    passwd_entry = json_loader[i]["passwd_entry"]
+                    group_entry = json_loader[i]["group_entry"]
+                    shadow_entry = json_loader[i]["shadow_entry"]
+
+                    FileEdit.append_lineaware_mode(
+                        "/etc/passwd", passwd_entry, "up")
+                    FileEdit.append_lineaware_mode(
+                        "/etc/group", group_entry, "up")
+                    FileEdit.append_lineaware_mode(
+                        "/etc/shadow", shadow_entry)
+
+        except Exception as e:
+            print(e)
+
         # This segment of code is for filesystem related executions on requested server
-        # ===================================================
 
         try:
 
@@ -58,27 +89,30 @@ class ExecuteBot:
             logger.debug(" Scan Complete for disks")
 
             percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
-            # if bool(filesystem_used) is True:  # Need to make it back as True after testing
-            #     Filesystem.check_and_wipeoutlvm(percentage_used, filesystem_used, lv_vg_pv_used)
-            # elif bool(lv_vg_pv_used) is True:  # Need to make it back as True after testing
-            #     Filesystem.check_and_warn(lv_vg_pv_used)
-            # else:
-            for i in range(len(json_loader)):
-                if json_loader[i]["Server"] == os.uname()[1]:
-                    fs_type = json_loader[i]["Filesystem"]
-                    mount_name = json_loader[i]["Mountpoint"]
-                    mount_size = json_loader[i]["Size(only in G)"]
-                    mount_owner = json_loader[i]["Owner"]
-                    mount_group = json_loader[i]["Group"]
-                    mount_perm = json_loader[i]["Permission"]
 
-                    Filesystem.lvm_operation(
-                        fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm)
+            if bool(filesystem_used) is True:  # Need to make it back as True after testing
+                Filesystem.check_and_wipeoutlvm(
+                    percentage_used, filesystem_used, lv_vg_pv_used)
+
+            elif bool(lv_vg_pv_used) is True:  # Need to make it back as True after testing
+                Filesystem.check_and_warn(lv_vg_pv_used)
+
+            else:
+                for i in range(len(json_loader)):
+                    if json_loader[i]["Server"] == os.uname()[1]:
+                        fs_type = json_loader[i]["Filesystem"]
+                        mount_name = json_loader[i]["Mountpoint"]
+                        mount_size = json_loader[i]["Size(only in G)"]
+                        mount_owner = json_loader[i]["Owner"]
+                        mount_group = json_loader[i]["Group"]
+                        mount_perm = json_loader[i]["Permission"]
+
+                        Filesystem.lvm_operation(
+                            fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm)
 
         except Exception as e:
             print(e)
 
-        # ===================================================
         # This segment of code is for netgroup related executions on requested server
 
         try:
@@ -145,39 +179,6 @@ class ExecuteBot:
                     Pubkey.authorized_keys(user_id, ssh_key)
                     logger.info(
                         " PUBKEY REQUEST FOR USER %s COMPLETED" % user_id)
-
-        except Exception as e:
-            print(e)
-
-        # This segment of code is for pubkeys related executions on requested server
-
-        try:
-
-            with open(
-                os.path.join(path, "usergroups.json")
-            ) as json_file:  # opening json file to read its contents and save into a variable
-                json_loader = json.loads(json_file.read())
-
-            # For Copying required file for User/Group change related operations
-            logger.info(" ---------- File backup started ----------")
-            Filecopy.backup("/etc/passwd")
-            Filecopy.backup("/etc/group")
-            Filecopy.backup("/etc/shadow", Type="secured")
-            logger.info(" ---------- File backup Completed ----------")
-            # Filecopy.backup("/etc/shadow")
-
-            for i in range(len(json_loader)):
-                if json_loader[i]["Server"] == os.uname()[1]:
-                    passwd_entry = json_loader[i]["passwd_entry"]
-                    group_entry = json_loader[i]["group_entry"]
-                    shadow_entry = json_loader[i]["shadow_entry"]
-
-                    FileEdit.append_lineaware_mode(
-                        "/etc/passwd", passwd_entry, "up")
-                    FileEdit.append_lineaware_mode(
-                        "/etc/group", group_entry, "up")
-                    FileEdit.append_lineaware_mode(
-                        "/etc/shadow", shadow_entry)
 
         except Exception as e:
             print(e)

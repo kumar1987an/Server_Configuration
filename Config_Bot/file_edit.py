@@ -33,17 +33,20 @@ class FileEdit(object):
         if os.path.basename(file_name) == "passwd":
             with open(file_name, "a") as a_file:
                 a_file.writelines("+@{}:x:::::\n".format(data))
-            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s" %
+                        (data, file_name))
 
         elif os.path.basename(file_name) == "group":
             with open(file_name, "a") as a_file:
                 a_file.writelines("+:::\n")
-            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s" %
+                        (data, file_name))
 
         elif os.path.basename(file_name) == "cron.allow":
             with open(file_name, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
-            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s" %
+                        (data, file_name))
 
         elif os.path.basename(file_name) == "shadow":
             with open(file_name, "a") as a_file:
@@ -52,7 +55,8 @@ class FileEdit(object):
         else:
             with open(file_name, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
-            logger.info(("Given data has been appended to the file name {}".format(file_name)))
+            logger.info(
+                ("Given data has been appended to the file name {}".format(file_name)))
 
     @staticmethod
     def find_replace(file_name, search_pattern, replace_pattern):
@@ -118,6 +122,8 @@ class FileEdit(object):
                     elif position == "down":
                         line_number = line_number + str(i+1)
                         break
+                else:
+                    FileEdit.append_mode(file_name, data)
 
             # appending the content one line above of given search pattern
             content.insert(int(line_number),
