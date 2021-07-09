@@ -27,7 +27,7 @@ class FileEdit(object):
     """this class is to edit file_name (Dynamic)"""
 
     @staticmethod
-    def append_mode(file_name, data):
+    def with_netgroup_append_mode(file_name, data):
         """Function definition: for appending data to a file_name"""
 
         if os.path.basename(file_name) == "passwd":
@@ -39,6 +39,21 @@ class FileEdit(object):
         elif os.path.basename(file_name) == "group":
             with open(file_name, "a") as a_file:
                 a_file.writelines("+:::\n")
+            logger.info(" '%s' --> appended to the file_name %s" %
+                        (data, file_name))
+
+    @staticmethod
+    def normal_append_mode(file_name, data):
+
+        if os.path.basename(file_name) == "passwd":
+            with open(file_name, "a") as a_file:
+                a_file.writelines("{}\n".format(data))
+            logger.info(" '%s' --> appended to the file_name %s" %
+                        (data, file_name))
+
+        elif os.path.basename(file_name) == "group":
+            with open(file_name, "a") as a_file:
+                a_file.writelines("{}\n".format(data))
             logger.info(" '%s' --> appended to the file_name %s" %
                         (data, file_name))
 
@@ -104,7 +119,7 @@ class FileEdit(object):
         """ Appending data exactly above """
 
         if file_name == "/etc/shadow":
-            FileEdit.append_mode(file_name, data)
+            FileEdit.normal_append_mode(file_name, data)
 
         else:
 

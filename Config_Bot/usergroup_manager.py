@@ -28,7 +28,7 @@ logger.addHandler(stream_handler)
 class Usergroup(object):
 
     @staticmethod
-    def usergroup_add(passwd_entry, group_entry, shadow_entry):
+    def netgroup_with_usergroup_add(passwd_entry, group_entry, shadow_entry):
 
         FileEdit.append_lineaware_mode(
             "/etc/passwd", passwd_entry, "up")
@@ -36,6 +36,13 @@ class Usergroup(object):
             "/etc/group", group_entry, "up")
         FileEdit.append_lineaware_mode(
             "/etc/shadow", shadow_entry)
+
+    @staticmethod
+    def only_usergroup_add(passwd_entry, group_entry, shadow_entry):
+
+        FileEdit.normal_append_mode("/etc/passwd", passwd_entry)
+        FileEdit.normal_append_mode("/etc/group", group_entry)
+        FileEdit.normal_append_mode("/etc/shadow", shadow_entry)
 
     @staticmethod
     def backupfile():

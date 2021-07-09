@@ -78,7 +78,7 @@ class ExecuteBot:
                     shadow_entry = json_loader[i]["shadow_entry"]
 
                     # Calling usergroup adding execution
-                    Usergroup.usergroup_add(
+                    Usergroup.netgroup_with_usergroup_add(
                         passwd_entry, group_entry, shadow_entry)
 
         elif "netgroups.json" in files_list:
@@ -119,7 +119,7 @@ class ExecuteBot:
                     shadow_entry = json_loader[i]["shadow_entry"]
 
                     # Calling usergroup adding execution
-                    Usergroup.usergroup_add(
+                    Usergroup.only_usergroup_add(
                         passwd_entry, group_entry, shadow_entry)
 
         # This segment of code is for pubkeys related executions on requested server
@@ -218,7 +218,8 @@ class ExecuteBot:
                 if json_loader[i]["Server"] == os.uname()[1]:
                     cron_user_name = json_loader[i]["User account"]
 
-                    FileEdit.append_mode("/etc/cron.allow", cron_user_name)
+                    FileEdit.normal_append_mode(
+                        "/etc/cron.allow", cron_user_name)
                     logger.info(
                         " %s USER HAS BEEN ALLOWED FOR CRONTAB EDIT" % cron_user_name
                     )

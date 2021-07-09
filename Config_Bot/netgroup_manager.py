@@ -31,8 +31,8 @@ class Netgroup(object):
     def netgroup_add(netgroup_name):
 
         # Delicate file edit based on actual configuration requirement
-        FileEdit.append_mode("/etc/passwd", netgroup_name)
-        FileEdit.append_mode("/etc/group", "+:::")
+        FileEdit.with_netgroup_append_mode("/etc/passwd", netgroup_name)
+        FileEdit.with_netgroup_append_mode("/etc/group", "+:::")
 
         search_patterns = [
             "passwd:.+",
