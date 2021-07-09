@@ -122,8 +122,6 @@ class FileEdit(object):
                     elif position == "down":
                         line_number = line_number + str(i+1)
                         break
-                else:
-                    FileEdit.append_mode(file_name, data)
 
             # appending the content one line above of given search pattern
             content.insert(int(line_number),

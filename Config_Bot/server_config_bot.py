@@ -16,6 +16,8 @@ from file_copy import Filecopy
 from file_edit import FileEdit
 from pubkey_manager import Pubkey
 from filesystem_manager import Filesystem
+from usergroup_manager import Usergroup
+from netgroup_manager import Netgroup
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -38,9 +40,11 @@ class ExecuteBot:
 
         path = "/dummyfs/%s" % self.user
 
-        # This segment of code is for netgroup related executions on requested server
+        files_list = os.listdir(path)
 
-        try:
+        if "netgroups.json" and "usergroups.json" in files_list:
+
+            # This segment of code is for netgroup related executions on requested server
 
             with open(
                 os.path.join(path, "netgroups.json")
@@ -48,48 +52,16 @@ class ExecuteBot:
                 json_loader = json.loads(json_file.read())
 
             # For Copying required file for Netgroup change related operations
-            logger.info(" ---------- File backup started ----------")
-            Filecopy.backup("/etc/passwd")
-            Filecopy.backup("/etc/nsswitch.conf")
-            Filecopy.backup("/etc/group")
-            logger.info(" ---------- File backup Completed ----------")
+            Netgroup.backupfile()
 
             for i in range(len(json_loader)):
                 if json_loader[i]["Server"] == os.uname()[1]:
                     netgroup_name = json_loader[i]["Netgroup"]
 
-                    # Delicate file edit based on actual configuration requirement
-                    FileEdit.append_mode("/etc/passwd", netgroup_name)
-                    FileEdit.append_mode("/etc/group", "+:::")
+                    # Calling netgroup adding execution
+                    Netgroup.netgroup_add(netgroup_name)
 
-                    search_patterns = [
-                        "passwd:.+",
-                        "group:.+",
-                        "shadow:.+",
-                        "netgroup:.+",
-                    ]
-                    replace_patterns = [
-                        "passwd:    files sssd",
-                        "group:    files nis sssd",
-                        "shadow:    compat",
-                        "netgroup:    files nis nisplus",
-                    ]
-
-                    FileEdit.find_replace(
-                        "/tmp/nsswitch.conf", search_patterns, replace_patterns
-                    )
-
-                    Filecopy.copy_file("/tmp/nsswitch.conf",
-                                       "/etc/nsswitch.conf")
-                    logger.info(" %s NETGROUP REQUEST COMPLETED" %
-                                netgroup_name)
-
-        except Exception as e:
-            print(e)
-
-        # This segment of code is for user groups related executions on requested server
-
-        try:
+            # This segment of code is for user groups related executions on requested server
 
             with open(
                 os.path.join(path, "usergroups.json")
@@ -97,11 +69,7 @@ class ExecuteBot:
                 json_loader = json.loads(json_file.read())
 
             # For Copying required file for User/Group change related operations
-            logger.info(" ---------- File backup started ----------")
-            Filecopy.backup("/etc/passwd")
-            Filecopy.backup("/etc/group")
-            Filecopy.backup("/etc/shadow", Type="secured")
-            logger.info(" ---------- File backup Completed ----------")
+            Usergroup.backupfile()
 
             for i in range(len(json_loader)):
                 if json_loader[i]["Server"] == os.uname()[1]:
@@ -109,15 +77,50 @@ class ExecuteBot:
                     group_entry = json_loader[i]["group_entry"]
                     shadow_entry = json_loader[i]["shadow_entry"]
 
-                    FileEdit.append_lineaware_mode(
-                        "/etc/passwd", passwd_entry, "up")
-                    FileEdit.append_lineaware_mode(
-                        "/etc/group", group_entry, "up")
-                    FileEdit.append_lineaware_mode(
-                        "/etc/shadow", shadow_entry)
+                    # Calling usergroup adding execution
+                    Usergroup.usergroup_add(
+                        passwd_entry, group_entry, shadow_entry)
 
-        except Exception as e:
-            print(e)
+        elif "netgroups.json" in files_list:
+
+            # This segment of code is for netgroup related executions on requested server
+
+            with open(
+                os.path.join(path, "netgroups.json")
+            ) as json_file:  # opening json file to read its contents and save into a variable
+                json_loader = json.loads(json_file.read())
+
+            # For Copying required file for Netgroup change related operations
+            Netgroup.backupfile()
+
+            for i in range(len(json_loader)):
+                if json_loader[i]["Server"] == os.uname()[1]:
+                    netgroup_name = json_loader[i]["Netgroup"]
+
+                    # Calling netgroup adding execution
+                    Netgroup.netgroup_add(netgroup_name)
+
+        elif "usergroups.json" in files_list:
+
+            # This segment of code is for user groups related executions on requested server
+
+            with open(
+                os.path.join(path, "usergroups.json")
+            ) as json_file:  # opening json file to read its contents and save into a variable
+                json_loader = json.loads(json_file.read())
+
+            # For Copying required file for User/Group change related operations
+            Usergroup.backupfile()
+
+            for i in range(len(json_loader)):
+                if json_loader[i]["Server"] == os.uname()[1]:
+                    passwd_entry = json_loader[i]["passwd_entry"]
+                    group_entry = json_loader[i]["group_entry"]
+                    shadow_entry = json_loader[i]["shadow_entry"]
+
+                    # Calling usergroup adding execution
+                    Usergroup.usergroup_add(
+                        passwd_entry, group_entry, shadow_entry)
 
         # This segment of code is for pubkeys related executions on requested server
 
