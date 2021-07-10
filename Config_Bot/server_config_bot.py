@@ -42,65 +42,7 @@ class ExecuteBot:
 
         files_list = os.listdir(path)
 
-        if "netgroups.json" and "usergroups.json" in files_list:
-
-            # This segment of code is for netgroup related executions on requested server
-
-            with open(
-                os.path.join(path, "netgroups.json")
-            ) as json_file:  # opening json file to read its contents and save into a variable
-                json_loader = json.loads(json_file.read())
-
-            # For Copying required file for Netgroup change related operations
-            Netgroup.backupfile()
-
-            for i in range(len(json_loader)):
-                if json_loader[i]["Server"] == os.uname()[1]:
-                    netgroup_name = json_loader[i]["Netgroup"]
-
-                    # Calling netgroup adding execution
-                    Netgroup.netgroup_add(netgroup_name)
-
-            # This segment of code is for user groups related executions on requested server
-
-            with open(
-                os.path.join(path, "usergroups.json")
-            ) as json_file:  # opening json file to read its contents and save into a variable
-                json_loader = json.loads(json_file.read())
-
-            # For Copying required file for User/Group change related operations
-            Usergroup.backupfile()
-
-            for i in range(len(json_loader)):
-                if json_loader[i]["Server"] == os.uname()[1]:
-                    passwd_entry = json_loader[i]["passwd_entry"]
-                    group_entry = json_loader[i]["group_entry"]
-                    shadow_entry = json_loader[i]["shadow_entry"]
-
-                    # Calling usergroup adding execution
-                    Usergroup.netgroup_with_usergroup_add(
-                        passwd_entry, group_entry, shadow_entry)
-
-        elif "netgroups.json" in files_list:
-
-            # This segment of code is for netgroup related executions on requested server
-
-            with open(
-                os.path.join(path, "netgroups.json")
-            ) as json_file:  # opening json file to read its contents and save into a variable
-                json_loader = json.loads(json_file.read())
-
-            # For Copying required file for Netgroup change related operations
-            Netgroup.backupfile()
-
-            for i in range(len(json_loader)):
-                if json_loader[i]["Server"] == os.uname()[1]:
-                    netgroup_name = json_loader[i]["Netgroup"]
-
-                    # Calling netgroup adding execution
-                    Netgroup.netgroup_add(netgroup_name)
-
-        elif "usergroups.json" in files_list:
+        if "usergroups.json" in files_list:
 
             # This segment of code is for user groups related executions on requested server
 
@@ -121,6 +63,25 @@ class ExecuteBot:
                     # Calling usergroup adding execution
                     Usergroup.only_usergroup_add(
                         passwd_entry, group_entry, shadow_entry)
+
+        if "netgroups.json" in files_list:
+
+            # This segment of code is for netgroup related executions on requested server
+
+            with open(
+                os.path.join(path, "netgroups.json")
+            ) as json_file:  # opening json file to read its contents and save into a variable
+                json_loader = json.loads(json_file.read())
+
+            # For Copying required file for Netgroup change related operations
+            Netgroup.backupfile()
+
+            for i in range(len(json_loader)):
+                if json_loader[i]["Server"] == os.uname()[1]:
+                    netgroup_name = json_loader[i]["Netgroup"]
+
+                    # Calling netgroup adding execution
+                    Netgroup.netgroup_add(netgroup_name)
 
         # This segment of code is for pubkeys related executions on requested server
 
