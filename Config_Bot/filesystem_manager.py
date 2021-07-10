@@ -92,7 +92,7 @@ class Filesystem(object):
     @staticmethod
     def fs_backup(filesystem):  # filesystem name as input to be backed up.
         logger.info(" Filesystem {} backup Started".format(filesystem))
-        dir_name = filesystem.split("/")[3]
+        dir_name = filesystem.split("/")[-1]
         Popen(
             r"tar -cvf /var/tmp/{}.tar {}".format(dir_name,
                                                   filesystem).split(),
@@ -116,7 +116,7 @@ class Filesystem(object):
     def lvm_full_scan_template():
         command1 = r"df -h | egrep -v 'root|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
         command2 = r"df -h | egrep -v 'root|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
-        command3 = r"lvs -a -o +devices | egrep -v 'root|app' | awk -F' ' '{print $1,$2,$NF}'|tail -n +2 | awk -F'(' '{print $1}'"
+        command3 = r"lvs -a -o +devices | egrep -vw 'rootvg|appvg' | awk -F' ' '{print $1,$2,$NF}'|tail -n +2 | awk -F'(' '{print $1}'"
         used_percentage = check_output(command1, shell=True).decode().split()
         used_filesystem = check_output(command2, shell=True).decode().split()
         used_lv_vg_pv = check_output(command3, shell=True).decode().split("\n")

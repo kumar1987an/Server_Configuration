@@ -138,25 +138,28 @@ class ExecuteBot:
 
             percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
 
-            if bool(filesystem_used) is True:  # Need to make it back as True after testing
-                Filesystem.check_and_wipeoutlvm(
-                    percentage_used, filesystem_used, lv_vg_pv_used)
-
-            elif bool(lv_vg_pv_used) is True:  # Need to make it back as True after testing
-                Filesystem.check_and_warn(lv_vg_pv_used)
-
-            else:
+            if bool(filesystem_used):
                 for i in range(len(json_loader)):
                     if json_loader[i]["Server"] == os.uname()[1]:
-                        fs_type = json_loader[i]["Filesystem"]
                         mount_name = json_loader[i]["Mountpoint"]
-                        mount_size = json_loader[i]["Size(only in G)"]
-                        mount_owner = json_loader[i]["Owner"]
-                        mount_group = json_loader[i]["Group"]
-                        mount_perm = json_loader[i]["Permission"]
+                        if filesystem_used == mount_name:
+                            Filesystem.check_and_wipeoutlvm(
+                                percentage_used, filesystem_used, lv_vg_pv_used)
 
-                        Filesystem.lvm_operation(
-                            fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm)
+            if bool(lv_vg_pv_used):
+                Filesystem.check_and_warn(lv_vg_pv_used)
+
+            for i in range(len(json_loader)):
+                if json_loader[i]["Server"] == os.uname()[1]:
+                    fs_type = json_loader[i]["Filesystem"]
+                    mount_name = json_loader[i]["Mountpoint"]
+                    mount_size = json_loader[i]["Size(only in G)"]
+                    mount_owner = json_loader[i]["Owner"]
+                    mount_group = json_loader[i]["Group"]
+                    mount_perm = json_loader[i]["Permission"]
+
+                    Filesystem.lvm_operation(
+                        fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm)
 
         except Exception as e:
             print(e)
