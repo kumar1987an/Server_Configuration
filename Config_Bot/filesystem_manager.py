@@ -271,7 +271,7 @@ class Filesystem(object):
                     data = r"/dev/{}/{}lv       {}    {}    defaults    0    0".format(
                         vg_with_max_free_space, new_lv_name, mount_name, fs_type
                     )
-                    FileEdit.append_mode("/etc/fstab", data)
+                    FileEdit.normal_append_mode("/etc/fstab", data)
 
             sleep(3)
 
