@@ -138,16 +138,19 @@ class ExecuteBot:
 
             percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
 
-            if bool(filesystem_used):
+            if bool(filesystem_used) is True:
                 for i in range(len(json_loader)):
                     if json_loader[i]["Server"] == os.uname()[1]:
                         mount_name = json_loader[i]["Mountpoint"]
-                        if filesystem_used == mount_name:
-                            Filesystem.check_and_wipeoutlvm(
-                                percentage_used, filesystem_used, lv_vg_pv_used)
+                        for fs in filesystem_used:
+                            if fs != mount_name:
+                                Filesystem.check_and_wipeoutlvm(
+                                    percentage_used, filesystem_used, lv_vg_pv_used)
 
-            if bool(lv_vg_pv_used):
-                Filesystem.check_and_warn(lv_vg_pv_used)
+            # percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
+
+            # if bool(lv_vg_pv_used) is True:
+            #     Filesystem.check_and_warn(lv_vg_pv_used)
 
             for i in range(len(json_loader)):
                 if json_loader[i]["Server"] == os.uname()[1]:
