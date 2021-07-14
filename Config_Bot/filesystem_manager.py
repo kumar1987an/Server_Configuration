@@ -74,20 +74,14 @@ class Filesystem(object):
 
     @staticmethod
     def partial_vgs_check():
-        command1 = r"vgs | egrep -v  'root' | tail -n +2 | awk -F' ' '{print $1}'"
-        command2 = r"vgs | egrep -v  'root' | tail -n +2 | awk -F' ' '{print $NF}'"
-        recently_used_vgs = check_output(command1, shell=True).split()
-        freespace_on_recently_used_vgs = check_output(
-            command2, shell=True).split()
-        return dict(
-            zip(
-                recently_used_vgs,
-                [
-                    size[1:-1] if size[0] == "<" else size[:-1]
-                    for size in freespace_on_recently_used_vgs
-                ],
-            )
-        )
+        command1 = r"vgs | grep -v 'rootvg' | tail -n +2"
+        command_output = check_output(command1, shell=True)
+        matches = re.findall(
+            r"\w+vg.|\w+.\w+$|\d\s$|\w+.\w+\s$", command_output, re.M)
+        final_output = [i.strip(" ") for i in matches]
+        available_free_vg_and_size = dict(
+            zip(final_output[0::2], final_output[1::2]))
+        return {key: value for key, value in available_free_vg_and_size.items() if value != "0"}
 
     @staticmethod
     def fs_backup(filesystem):  # filesystem name as input to be backed up.
@@ -116,7 +110,7 @@ class Filesystem(object):
     def lvm_full_scan_template():
         command1 = r"df -h | egrep -v 'root|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $5}'"
         command2 = r"df -h | egrep -v 'root|mnt|dummy|swap|snap|udev|sd|tmpfs|boot'|tail -n +2 | awk -F' ' '{print $NF}'"
-        command3 = r"lvs -a -o +devices | egrep -vw 'rootvg|appvg' | awk -F' ' '{print $1,$2,$NF}'|tail -n +2 | awk -F'(' '{print $1}'"
+        command3 = r"lvs -a -o +devices | egrep -vw 'rootvg|testvg' | awk -F' ' '{print $1,$2,$NF}'|tail -n +2 | awk -F'(' '{print $1}'"
         used_percentage = check_output(command1, shell=True).decode().split()
         used_filesystem = check_output(command2, shell=True).decode().split()
         used_lv_vg_pv = check_output(command3, shell=True).decode().split("\n")
@@ -205,7 +199,7 @@ class Filesystem(object):
 
             logger.critical(
                 """
-            These are the LVMs still in use without required filesystems 
+            These are the LVMs still in use without required filesystems
             VG: {}
             LV: {}
             PV: {}
@@ -316,6 +310,7 @@ class Filesystem(object):
         available_vg_and_free_size = (
             Filesystem.partial_vgs_check()
         )  # a normal dictionary
+
         vg_with_max_free_space = max(
             available_vg_and_free_size, key=available_vg_and_free_size.get
         )
@@ -324,6 +319,22 @@ class Filesystem(object):
         )
         new_lv_name = mount_name.split("/")[-1]
         requested_lv_size = float(mount_size)
+
+        # print(free_pv)
+        # print(free_pv_size)
+        # print(free_space_in_max_space_vg)
+        # print(vg_with_max_free_space)
+        # print(available_vg_and_free_size)
+        # print(new_lv_name)
+        # print(requested_lv_size)
+
+        if available_vg_and_free_size:
+            if free_space_in_max_space_vg[-1] == "m":
+                actual_space_in_vg = float(
+                    free_space_in_max_space_vg[:-1]) * 1024
+
+            if free_space_in_max_space_vg[-1] == "g":
+                actual_space_in_vg = float(free_space_in_max_space_vg[:-1])
 
         if available_vg_and_free_size:
 
@@ -336,7 +347,7 @@ class Filesystem(object):
                     )
                 )
             except CalledProcessError:
-                if requested_lv_size < free_space_in_max_space_vg:
+                if requested_lv_size < actual_space_in_vg:
                     Filesystem.lvm_code_snippet(
                         requested_lv_size,
                         new_lv_name,
