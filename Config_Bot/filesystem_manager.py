@@ -123,7 +123,7 @@ class Filesystem(object):
         VG, LV, PS and FS level including backup and LVM removal"""
 
         logger.info(" =========== LVM Operation Started =========== ")
-        for ps, fs, metadata in zip(percentage_used, filesystem_used, lv_vg_pv_used):
+        for ps, metadata in zip(percentage_used, lv_vg_pv_used):
             lv = metadata.split()[0]
             vg = metadata.split()[1]
             pv = metadata.split()[2]
@@ -133,13 +133,13 @@ class Filesystem(object):
             )
             if ps in ["1%", "2%", "3%", "4%", "5%"]:
 
-                Filesystem().fs_backup(fs)  # Backup function call
+                Filesystem().fs_backup(filesystem_used)  # Backup function call
 
                 try:
-                    command2 = r"umount %s" % fs
+                    command2 = r"umount %s" % filesystem_used
                     Popen(command2.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(
-                        " FS {} has been un-mounted successfully".format(fs))
+                        " FS {} has been un-mounted successfully".format(filesystem_used))
 
                 except Exception as e:
                     print(e)
@@ -183,7 +183,7 @@ class Filesystem(object):
                 logger.critical(
                     "{} is more than 5% occupied please perform \
                                     FS backup manually and re-run the program".format(
-                        fs
+                        filesystem_used
                     )
                 )
 
@@ -210,25 +210,25 @@ class Filesystem(object):
 
     @staticmethod
     def lvm_code_snippet(
-        requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type, mount_owner, mount_group, mount_perm
+        requested_lv_size, new_lv_name, vgname, mount_name, fs_type, mount_owner, mount_group, mount_perm
     ):
         try:
 
             # LV create
             command1 = r"lvcreate -y -L {}G -n {}lv {}".format(
-                requested_lv_size, new_lv_name, vg_with_max_free_space
+                requested_lv_size, new_lv_name, vgname
             )
             check_call(command1, shell=True)
             logger.info(
                 "LV {}lv has been created under volumen group {} successfully".format(
-                    new_lv_name, vg_with_max_free_space
+                    new_lv_name, vgname
                 )
             )
 
             sleep(3)
             # FS create
             command2 = r"mkfs.ext4 /dev/{}/{}lv -F".format(
-                vg_with_max_free_space, new_lv_name
+                vgname, new_lv_name
             )
             check_call(command2, shell=True)
             logger.info(
@@ -263,7 +263,7 @@ class Filesystem(object):
                 else:
                     # FS tab entry
                     data = r"/dev/{}/{}lv       {}    {}    defaults    0    0".format(
-                        vg_with_max_free_space, new_lv_name, mount_name, fs_type
+                        vgname, new_lv_name, mount_name, fs_type
                     )
                     FileEdit.normal_append_mode("/etc/fstab", data)
 
@@ -282,13 +282,14 @@ class Filesystem(object):
             else:
                 try:
                     os.chown(mount_name, pwd.getpwnam(
-                        mount_owner).pw_uid, pwd.getpwnam(mount_owner).pw_gid)
+                        mount_owner).pw_uid, pwd.getpwnam(mount_group).pw_gid)
                     logger.info(" Filesystem {} has been changed to {}:{} user group".format(
                         mount_name, mount_owner, mount_group))
                 except Exception as e:
                     print(e)
                 else:
-                    command5 = r"chmod {} {}".format(mount_perm, mount_name)
+                    command5 = r"chmod {} {}".format(
+                        int(mount_perm), mount_name)
                     check_call(command5, shell=True)
                     logger.info(" Filesystem {} has been changed to {} requested permission".format(
                         mount_name, mount_perm))
@@ -301,73 +302,19 @@ class Filesystem(object):
         fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm
     ):
 
-        free_disk_and_size = Filesystem.unused_pvs_check()  # a normal dictionary
-        free_disk_with_max_size = max(
-            free_disk_and_size, key=free_disk_and_size.get)
-        free_pv, free_pv_size = free_disk_with_max_size, free_disk_and_size.pop(
-            free_disk_with_max_size
-        )
-        available_vg_and_free_size = (
-            Filesystem.partial_vgs_check()
-        )  # a normal dictionary
-
-        vg_with_max_free_space = max(
-            available_vg_and_free_size, key=available_vg_and_free_size.get
-        )
-        free_space_in_max_space_vg = available_vg_and_free_size.pop(
-            vg_with_max_free_space
-        )
-        new_lv_name = mount_name.split("/")[-1]
-        requested_lv_size = float(mount_size)
-
-        # print(free_pv)
-        # print(free_pv_size)
-        # print(free_space_in_max_space_vg)
-        # print(vg_with_max_free_space)
-        # print(available_vg_and_free_size)
-        # print(new_lv_name)
-        # print(requested_lv_size)
-
-        if available_vg_and_free_size:
-            if free_space_in_max_space_vg[-1] == "m":
-                actual_space_in_vg = float(
-                    free_space_in_max_space_vg[:-1]) * 1024
-
-            if free_space_in_max_space_vg[-1] == "g":
-                actual_space_in_vg = float(free_space_in_max_space_vg[:-1])
-
-        if available_vg_and_free_size:
-
-            try:
-                command1 = r"df -h | grep -i {}".format(mount_name)
-                check_call(command1, shell=True)
-                logger.warning(
-                    "Filesystem {} already exists on existing vg {}".format(
-                        mount_name, vg_with_max_free_space
-                    )
-                )
-            except CalledProcessError:
-                if requested_lv_size < actual_space_in_vg:
-                    Filesystem.lvm_code_snippet(
-                        requested_lv_size,
-                        new_lv_name,
-                        vg_with_max_free_space,
-                        mount_name,
-                        fs_type,
-                        mount_owner,
-                        mount_group,
-                        mount_perm
-                    )
-
-        elif free_disk_and_size:
+        if Filesystem.unused_pvs_check():
+            free_disk_and_size = Filesystem.unused_pvs_check()  # a normal dictionary
+            free_disk_with_max_size = max(
+                free_disk_and_size, key=free_disk_and_size.get)
+            free_pv, free_pv_size = free_disk_with_max_size, free_disk_and_size.pop(
+                free_disk_with_max_size)
+            new_lv_name = mount_name.split("/")[-1]
+            requested_lv_size = float(mount_size)
             try:
                 command1 = r"df -h | grep -i {}".format(mount_name)
                 check_call(command1.split(), stdout=PIPE, stderr=PIPE)
                 logger.warning(
-                    "Filesystem {} already exists on existing vg {}".format(
-                        mount_name, vg_with_max_free_space
-                    )
-                )
+                    "Filesystem {} already exists".format(mount_name))
 
             except CalledProcessError:
                 if requested_lv_size <= free_pv_size:
@@ -410,7 +357,47 @@ class Filesystem(object):
 
                         finally:
                             Filesystem.lvm_code_snippet(
-                                requested_lv_size, new_lv_name, vg_with_max_free_space, mount_name, fs_type, mount_owner, mount_group, mount_perm)
+                                requested_lv_size, new_lv_name, vgname, mount_name, fs_type, mount_owner, mount_group, mount_perm)
 
                     except Exception as e:
                         print(e)
+
+        if Filesystem.partial_vgs_check():
+            available_vg_and_free_size = (
+                Filesystem.partial_vgs_check()
+            )  # a normal dictionary
+
+            vg_with_max_free_space = max(
+                available_vg_and_free_size, key=available_vg_and_free_size.get
+            )
+            free_space_in_max_space_vg = available_vg_and_free_size.pop(
+                vg_with_max_free_space
+            )
+
+            if free_space_in_max_space_vg[-1] == "m":
+                actual_space_in_vg = float(
+                    free_space_in_max_space_vg[:-1]) * 1024
+
+            if free_space_in_max_space_vg[-1] == "g":
+                actual_space_in_vg = float(free_space_in_max_space_vg[:-1])
+
+            try:
+                command1 = r"df -h | grep -i {}".format(mount_name)
+                check_call(command1, shell=True)
+                logger.warning(
+                    "Filesystem {} already exists on existing vg {}".format(
+                        mount_name, vg_with_max_free_space
+                    )
+                )
+            except CalledProcessError:
+                if requested_lv_size < actual_space_in_vg:
+                    Filesystem.lvm_code_snippet(
+                        requested_lv_size,
+                        new_lv_name,
+                        vg_with_max_free_space,
+                        mount_name,
+                        fs_type,
+                        mount_owner,
+                        mount_group,
+                        mount_perm
+                    )
