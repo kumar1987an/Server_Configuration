@@ -131,7 +131,7 @@ class Filesystem(object):
             pv = metadata.split()[2]
 
             logger.warning(
-                " Proceeding with app data LVM wipe out for filesystem {}".format(fs)
+                " Processing with app data LVM wipe out for filesystem {}".format(fs)
             )
             if ps in ["1%", "2%", "3%", "4%", "5%"]:
 
