@@ -285,7 +285,7 @@ class Filesystem(object):
             else:
                 try:
                     os.chown(mount_name, pwd.getpwnam(
-                        mount_owner).pw_uid, pwd.getpwnam(mount_group).pw_gid)
+                        mount_owner).pw_uid, pwd.getpwnam(mount_owner).pw_gid)
                     logger.info(" Filesystem {} has been changed to {}:{} user group".format(
                         mount_name, mount_owner, mount_group))
                 except Exception as e:
@@ -295,7 +295,7 @@ class Filesystem(object):
                         int(mount_perm), mount_name)
                     check_call(command5, shell=True)
                     logger.info(" Filesystem {} has been changed to {} requested permission".format(
-                        mount_name, mount_perm))
+                        mount_name, int(mount_perm)))
             finally:
                 logger.info(
                     "================= LVM configuration Completed =================")
@@ -312,7 +312,6 @@ class Filesystem(object):
                 free_disk_with_max_size)
             new_lv_name = mount_name.split("/")[-1]
             requested_lv_size = float(mount_size)
-            vgname = ""
             try:
                 command1 = r"df -h | grep -i {}".format(mount_name)
                 check_call(command1.split(), stdout=PIPE, stderr=PIPE)
@@ -331,22 +330,20 @@ class Filesystem(object):
                         command3 = r"vgs | egrep -v root | awk -F' ' '{print $1}'|tail -n +2"
                         child3 = check_output(command3, shell=True)
                         vgname_pattern = re.compile(r"\d", re.MULTILINE)
-
                         try:
-                            maxvg_number = max([int(match.group())
-                                                for match in vgname_pattern.finditer(child3)])
-                            if maxvg_number:
-                                vgname = "appvg{}".format(maxvg_number + 1)
-                                command4 = r"vgcreate {} {}".format(
-                                    vgname, free_pv)
-                                call(command4, shell=True)
-                                logger.info(
-                                    "VG {} has been created on top of {}".format(
-                                        vgname, free_pv
-                                    )
+                            maxvg_number = max([int(match.group()) for match in vgname_pattern.finditer(child3)])
+                            vgname = "appvg{}".format(maxvg_number + 1)
+                            command4 = r"vgcreate {} {}".format(
+                                vgname, free_pv)
+                            call(command4, shell=True)
+                            logger.info(
+                                "VG {} has been created on top of {}".format(
+                                    vgname, free_pv
                                 )
-
-                        except BaseException.message:
+                            )
+                            Filesystem.lvm_code_snippet(requested_lv_size, new_lv_name, vgname, mount_name, fs_type,
+                                                        mount_owner, mount_group, mount_perm)
+                        except ValueError:
                             maxvg_number = 1
                             vgname = "appvg{}".format(maxvg_number)
                             command5 = r"vgcreate {} {}".format(
@@ -357,11 +354,8 @@ class Filesystem(object):
                                     vgname, free_pv
                                 )
                             )
-
-                        finally:
-                            Filesystem.lvm_code_snippet(
-                                requested_lv_size, new_lv_name, vgname, mount_name, fs_type, mount_owner, mount_group,
-                                mount_perm)
+                            Filesystem.lvm_code_snippet(requested_lv_size, new_lv_name, vgname, mount_name, fs_type,
+                                                        mount_owner, mount_group, mount_perm)
 
                     except Exception as e:
                         print(e)
