@@ -138,34 +138,36 @@ class ExecuteBot:
 
             percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
 
-            if filesystem_used:
-                for i in range(len(json_loader)):
-                    if json_loader[i]["Server"] == os.uname()[1]:
-                        mount_name = json_loader[i]["Mountpoint"]
-                        for fs in filesystem_used:
-                            if mount_name != fs:
-                                print("mount_name: {}".format(fs))
-                                Filesystem.check_and_wipeoutlvm(
-                                    percentage_used, fs, lv_vg_pv_used)
+            if not filesystem_used:
+                mount_names = [json_loader[i]["Mountpoint"]
+                               for i in range(len(json_loader))
+                               if json_loader[i]["Server"] == os.uname()[1]]
+                filesystems_to_be_removed = [fs for fs in filesystem_used if fs not in mount_names]
+                Filesystem.check_and_wipe_out_lvm(percentage_used, filesystems_to_be_removed, lv_vg_pv_used)
 
             percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
 
             if lv_vg_pv_used:
-                logger.warning("Have a check on existing PV, LV, and VG")
+                for metadata in lv_vg_pv_used:
+                    lv = metadata.split()[0]
+                    vg = metadata.split()[1]
+                    pv = metadata.split()[2]
+                    logger.warning("Have a check on existing PV = {}, VG = {} and LV = {}".format(pv, vg, lv))
 
-            percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
-
-            if not filesystem_used and not lv_vg_pv_used:
-                for i in range(len(json_loader)):
-                    if json_loader[i]["Server"] == os.uname()[1]:
-                        fs_type = json_loader[i]["Filesystem"]
-                        mount_name = json_loader[i]["Mountpoint"]
-                        mount_size = json_loader[i]["Size(only in G)"]
-                        mount_owner = json_loader[i]["Owner"]
-                        mount_group = json_loader[i]["Group"]
-                        mount_perm = json_loader[i]["Permission"]
-
-                        Filesystem.lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group, int(mount_perm))
+            # percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
+            #
+            # if not filesystem_used and not lv_vg_pv_used:
+            #     for i in range(len(json_loader)):
+            #         if json_loader[i]["Server"] == os.uname()[1]:
+            #             fs_type = json_loader[i]["Filesystem"]
+            #             mount_name = json_loader[i]["Mountpoint"]
+            #             mount_size = json_loader[i]["Size(only in G)"]
+            #             mount_owner = json_loader[i]["Owner"]
+            #             mount_group = json_loader[i]["Group"]
+            #             mount_perm = json_loader[i]["Permission"]
+            #
+            #             Filesystem.lvm_operation(fs_type, mount_name, mount_size,
+            #                                      mount_owner, mount_group, int(mount_perm))
 
         except Exception as e:
             print(e)

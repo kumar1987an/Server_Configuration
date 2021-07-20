@@ -120,32 +120,32 @@ class Filesystem(object):
         return used_percentage, used_filesystem, used_lv_vg_pv
 
     @staticmethod
-    def check_and_wipeoutlvm(percentage_used, filesystem_used, lv_vg_pv_used):
+    def check_and_wipe_out_lvm(percentage_used, filesystem_used, lv_vg_pv_used):
         """This function will perform various LVM Operations like
         VG, LV, PS and FS level including backup and LVM removal"""
 
         logger.info(" =========== LVM Operation Started =========== ")
-        for ps, metadata in zip(percentage_used, lv_vg_pv_used):
+        for ps, fs, metadata in zip(percentage_used, filesystem_used, lv_vg_pv_used):
             lv = metadata.split()[0]
             vg = metadata.split()[1]
             pv = metadata.split()[2]
 
             logger.warning(
-                " Proceeding with app data LVM wipeout if FS, LV, VG, PV available"
+                " Proceeding with app data LVM wipe out for filesystem {}".format(fs)
             )
             if ps in ["1%", "2%", "3%", "4%", "5%"]:
 
-                Filesystem().fs_backup(filesystem_used)  # Backup function call
+                Filesystem().fs_backup(fs)  # Backup function call
 
                 try:
-                    command2 = r"umount %s" % filesystem_used
+                    command2 = r"umount %s" % fs
                     Popen(command2.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(
-                        " FS {} has been un-mounted successfully".format(filesystem_used))
+                        " FS {} has been un-mounted successfully".format(fs))
 
                 except Exception as e:
                     print(e)
-
+                sleep(2)
                 try:
                     command3 = r"lvremove -f /dev/%s/%s" % (vg, lv)
                     Popen(command3.split(), stdout=PIPE, stderr=PIPE)
@@ -154,11 +154,12 @@ class Filesystem(object):
 
                 except Exception as e:
                     print(e)
-
+                sleep(2)
                 try:
                     command4 = r"vgchange -an %s" % vg
                     Popen(command4.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(" VG {} state changed to offline".format(vg))
+                    sleep(2)
                     command5 = r"vgremove %s" % vg
                     Popen(command5.split(), stdout=PIPE, stderr=PIPE)
                     logger.info(
@@ -168,7 +169,7 @@ class Filesystem(object):
 
                 except Exception as e:
                     print(e)
-
+                sleep(2)
                 try:
                     command6 = r"pvremove %s" % pv
                     Popen(command6.split(), stdout=PIPE, stderr=PIPE)
@@ -179,16 +180,15 @@ class Filesystem(object):
                 except Exception as e:
                     print(e)
 
-                logger.warning(" Completed with app data LVM wipeout")
+                logger.warning(" Completed with app data LVM wipe out")
 
             else:
                 logger.critical(
                     "{} is more than 5% occupied please perform \
                                     FS backup manually and re-run the program".format(
-                        filesystem_used
+                        fs
                     )
                 )
-
         logger.info(" =========== LVM Operation Completed =========== ")
 
     @staticmethod
