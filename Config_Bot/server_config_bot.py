@@ -150,9 +150,6 @@ class ExecuteBot:
                 filesystems_to_be_created = [mount_name
                                              for mount_name in mount_names
                                              if mount_name not in filesystem_used]
-                print(filesystems_to_be_removed)
-                print(filesystems_to_be_created)
-
                 if filesystems_to_be_removed:
                     Filesystem.check_and_wipe_out_lvm(percentage_used, filesystems_to_be_removed, lv_vg_pv_used)
 
@@ -166,8 +163,8 @@ class ExecuteBot:
                                 mount_owner = j["Owner"]
                                 mount_group = j["Group"]
                                 mount_perm = j["Permission"]
-                                # print(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm)
-                                Filesystem.lvm_operation(fs_type,mount_name, mount_size, mount_owner, mount_group,
+                                print(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm)
+                                Filesystem.lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group,
                                                          int(mount_perm))
                 else:
                     logger.info(" No filesystems are required to be removed as filesystems already exists")

@@ -316,6 +316,74 @@ class Filesystem(object):
     def lvm_operation(
             fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm
     ):
+        if Filesystem.partial_vgs_check():
+            available_vg_and_free_size = (
+                Filesystem.partial_vgs_check()
+            )  # a normal dictionary
+
+            vg_with_max_free_space = max(
+                available_vg_and_free_size, key=available_vg_and_free_size.get
+            )
+            free_space_in_max_space_vg = available_vg_and_free_size.pop(
+                vg_with_max_free_space
+            )
+            requested_lv_size = float(mount_size)
+            new_lv_name = mount_name.split("/")[-1]
+
+            if free_space_in_max_space_vg[-1] == "m":
+                actual_space_in_vg = float(
+                    free_space_in_max_space_vg[:-1]) * 1024
+                if requested_lv_size < actual_space_in_vg:
+                    try:
+                        command1 = r"df -h | grep -i {}".format(mount_name)
+                        check_call(command1, shell=True)
+                        logger.warning(
+                            "Filesystem {} already exists on existing vg {}".format(
+                                mount_name, vg_with_max_free_space
+                            )
+                        )
+                    except CalledProcessError:
+                        if requested_lv_size < actual_space_in_vg:
+                            Filesystem.lvm_code_snippet(
+                                requested_lv_size,
+                                new_lv_name,
+                                vg_with_max_free_space,
+                                mount_name,
+                                fs_type,
+                                mount_owner,
+                                mount_group,
+                                mount_perm
+                            )
+                else:
+                    logger.critical(r"Since there is no adequate space to create an LV in {},\n"
+                                    r"Searching for new PV to create LV".format(vg_with_max_free_space))
+
+            if free_space_in_max_space_vg[-1] == "g":
+                actual_space_in_vg = float(free_space_in_max_space_vg[:-1])
+                if requested_lv_size < actual_space_in_vg:
+                    try:
+                        command1 = r"df -h | grep -i {}".format(mount_name)
+                        check_call(command1, shell=True)
+                        logger.warning(
+                            "Filesystem {} already exists on existing vg {}".format(
+                                mount_name, vg_with_max_free_space
+                            )
+                        )
+                    except CalledProcessError:
+                        if requested_lv_size < actual_space_in_vg:
+                            Filesystem.lvm_code_snippet(
+                                requested_lv_size,
+                                new_lv_name,
+                                vg_with_max_free_space,
+                                mount_name,
+                                fs_type,
+                                mount_owner,
+                                mount_group,
+                                mount_perm)
+                else:
+                    logger.critical(r"Since there is no adequate space to create an LV in {},\n"
+                                    r"Searching for new PV to create LV".format(vg_with_max_free_space))
+
         if Filesystem.unused_pvs_check():
             free_disk_and_size = Filesystem.unused_pvs_check()  # a normal dictionary
             free_disk_with_max_size = max(
@@ -413,63 +481,3 @@ class Filesystem(object):
 
                     except Exception as e:
                         print(e)
-
-        if Filesystem.partial_vgs_check():
-            available_vg_and_free_size = (
-                Filesystem.partial_vgs_check()
-            )  # a normal dictionary
-
-            vg_with_max_free_space = max(
-                available_vg_and_free_size, key=available_vg_and_free_size.get
-            )
-            free_space_in_max_space_vg = available_vg_and_free_size.pop(
-                vg_with_max_free_space
-            )
-            requested_lv_size = float(mount_size)
-            new_lv_name = mount_name.split("/")[-1]
-
-            if free_space_in_max_space_vg[-1] == "m":
-                actual_space_in_vg = float(
-                    free_space_in_max_space_vg[:-1]) * 1024
-                try:
-                    command1 = r"df -h | grep -i {}".format(mount_name)
-                    check_call(command1, shell=True)
-                    logger.warning(
-                        "Filesystem {} already exists on existing vg {}".format(
-                            mount_name, vg_with_max_free_space
-                        )
-                    )
-                except CalledProcessError:
-                    if requested_lv_size < actual_space_in_vg:
-                        Filesystem.lvm_code_snippet(
-                            requested_lv_size,
-                            new_lv_name,
-                            vg_with_max_free_space,
-                            mount_name,
-                            fs_type,
-                            mount_owner,
-                            mount_group,
-                            mount_perm
-                        )
-
-            if free_space_in_max_space_vg[-1] == "g":
-                actual_space_in_vg = float(free_space_in_max_space_vg[:-1])
-                try:
-                    command1 = r"df -h | grep -i {}".format(mount_name)
-                    check_call(command1, shell=True)
-                    logger.warning(
-                        "Filesystem {} already exists on existing vg {}".format(
-                            mount_name, vg_with_max_free_space
-                        )
-                    )
-                except CalledProcessError:
-                    if requested_lv_size < actual_space_in_vg:
-                        Filesystem.lvm_code_snippet(
-                            requested_lv_size,
-                            new_lv_name,
-                            vg_with_max_free_space,
-                            mount_name,
-                            fs_type,
-                            mount_owner,
-                            mount_group,
-                            mount_perm)
