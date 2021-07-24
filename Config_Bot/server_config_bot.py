@@ -104,7 +104,7 @@ class ExecuteBot:
         except Exception as e:
             print(e)
 
-        # This segment of code is for softwares related executions on requested server
+        # This segment of code is for software related executions on requested server
 
         try:
 
@@ -118,7 +118,7 @@ class ExecuteBot:
         except Exception as e:
             print(e)
 
-        # This segment of code is for filesystem related executions on requested server
+        # This segment of code is for filesystem related executions on requested servers
 
         try:
 
@@ -139,13 +139,36 @@ class ExecuteBot:
             percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
 
             if filesystem_used:
+
                 mount_names = [json_loader[i]["Mountpoint"]
                                for i in range(len(json_loader))
                                if json_loader[i]["Server"] == os.uname()[1]]
-                filesystems_to_be_removed = [fs for fs in filesystem_used if fs not in mount_names]
+                filesystems_to_be_removed = [fs
+                                             for fs in filesystem_used
+                                             if fs not in mount_names]
+
+                filesystems_to_be_created = [mount_name
+                                             for mount_name in mount_names
+                                             if mount_name not in filesystem_used]
+                print(filesystems_to_be_removed)
+                print(filesystems_to_be_created)
+
                 if filesystems_to_be_removed:
                     Filesystem.check_and_wipe_out_lvm(percentage_used, filesystems_to_be_removed, lv_vg_pv_used)
 
+                elif filesystems_to_be_created:
+                    for i in filesystems_to_be_created:
+                        for j in json_loader:
+                            if j['Mountpoint'] == i:
+                                fs_type = j["Filesystem"]
+                                mount_name = j["Mountpoint"]
+                                mount_size = j["Size(only in G)"]
+                                mount_owner = j["Owner"]
+                                mount_group = j["Group"]
+                                mount_perm = j["Permission"]
+                                # print(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm)
+                                Filesystem.lvm_operation(fs_type,mount_name, mount_size, mount_owner, mount_group,
+                                                         int(mount_perm))
                 else:
                     logger.info(" No filesystems are required to be removed as filesystems already exists")
 
@@ -157,7 +180,6 @@ class ExecuteBot:
                     logger.warning("Have a check on existing PV = {}, VG = {} and LV = {}".format(pv, vg, lv))
 
             else:
-
                 for i in range(len(json_loader)):
                     if json_loader[i]["Server"] == os.uname()[1]:
                         fs_type = json_loader[i]["Filesystem"]
@@ -166,6 +188,7 @@ class ExecuteBot:
                         mount_owner = json_loader[i]["Owner"]
                         mount_group = json_loader[i]["Group"]
                         mount_perm = json_loader[i]["Permission"]
+                        # print(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm)
                         Filesystem.lvm_operation(fs_type,
                                                  mount_name,
                                                  mount_size,
