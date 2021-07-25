@@ -58,12 +58,12 @@ class Filesystem(object):
                 used_disks = used_disks + matches[index] + "|"
         try:
             command2 = (
-                    r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $2}'|awk -F':' '{print $1}'"
-                    % used_disks
+                r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $2}'|awk -F':' '{print $1}'"
+                % used_disks
             )
             command3 = (
-                    r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $3}'"
-                    % used_disks
+                r"fdisk -l| grep -i sd | egrep -v '%s'| awk -F' ' '{print $3}'"
+                % used_disks
             )
             free_pvs = check_output(command2, shell=True).split()
             free_gbs = check_output(command3, shell=True).split()
@@ -131,7 +131,8 @@ class Filesystem(object):
             pv = metadata.split()[2]
 
             logger.warning(
-                " Processing with app data LVM wipe out for filesystem {}".format(fs)
+                " Processing with app data LVM wipe out for filesystem {}".format(
+                    fs)
             )
             if ps in ["1%", "2%", "3%", "4%", "5%"]:
 
@@ -227,9 +228,8 @@ class Filesystem(object):
                     )
                 )
             else:
-                command1 = r"lvcreate -y -l 100%FREE -n {}lv {}".format(
-                    requested_lv_size, new_lv_name, vg_name
-                )
+                command1 = r"lvcreate -y -l 100%FREE -n {}lv {}".format(new_lv_name, vg_name
+                                                                        )
                 check_call(command1, shell=True)
                 logger.info(
                     "LV {}lv has been created under volume group {} successfully".format(
@@ -310,7 +310,8 @@ class Filesystem(object):
             finally:
                 pass
         finally:
-            logger.info("================= LVM configuration Completed =================")
+            logger.info(
+                "================= LVM configuration Completed =================")
 
     @staticmethod
     def lvm_operation(
@@ -344,7 +345,8 @@ class Filesystem(object):
                         child3 = check_output(command3, shell=True)
                         vgname_pattern = re.compile(r"\d", re.MULTILINE)
                         try:
-                            maxvg_number = max([int(match.group()) for match in vgname_pattern.finditer(child3)])
+                            maxvg_number = max(
+                                [int(match.group()) for match in vgname_pattern.finditer(child3)])
                             vgname = "appvg{}".format(maxvg_number + 1)
                             command4 = r"vgcreate {} {}".format(
                                 vgname, free_pv)
@@ -385,7 +387,8 @@ class Filesystem(object):
                         child3 = check_output(command3, shell=True)
                         vgname_pattern = re.compile(r"\d", re.MULTILINE)
                         try:
-                            maxvg_number = max([int(match.group()) for match in vgname_pattern.finditer(child3)])
+                            maxvg_number = max(
+                                [int(match.group()) for match in vgname_pattern.finditer(child3)])
                             vgname = "appvg{}".format(maxvg_number + 1)
                             command4 = r"vgcreate {} {}".format(
                                 vgname, free_pv)
