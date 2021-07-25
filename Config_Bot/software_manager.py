@@ -28,4 +28,27 @@ logger.addHandler(stream_handler)
 
 
 class SoftwareManager(object):
-    pass
+
+    @staticmethod
+    def arch_check():
+        pass
+
+    @staticmethod
+    def load_repo():
+        pass
+
+    @staticmethod
+    def install_software():
+        pass
+
+    @staticmethod
+    def deinstall_software():
+        pass
+
+    @staticmethod
+    def installed_software_check():
+        pass
+
+    @staticmethod
+    def deinstalled_software_check():
+        pass
