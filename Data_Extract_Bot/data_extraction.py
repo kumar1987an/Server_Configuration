@@ -24,7 +24,7 @@ class DataExtract:
 
         # Loading main Excel File
         file_in = pd.ExcelFile(
-            os.path.join("/kmrnr8501/server_config/{user}", "config_input.xlsx")
+            os.path.join(f"/kmrnr8501/server_config/{user}", "config_input.xlsx")
         )
 
         output = file_in.parse(config_type)
