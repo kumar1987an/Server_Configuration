@@ -19,15 +19,15 @@ logger.addHandler(stream_handler)
 
 
 class DataExtract:
-
-    # Loading main Excel File
-    file_in = pd.ExcelFile(
-        os.path.join("/kmrnr8501/server_config", "config_input.xlsx")
-    )
-
     @staticmethod
     def extractor_function(user, config_type, json_filename):
-        output = DataExtract.file_in.parse(config_type)
+
+        # Loading main Excel File
+        file_in = pd.ExcelFile(
+            os.path.join("/kmrnr8501/server_config/{user}", "config_input.xlsx")
+        )
+
+        output = file_in.parse(config_type)
         with open(os.path.join(f"/dummyfs/{user}", json_filename), "w") as f:
             f.writelines(output.to_json(orient="records"))
             logger.info(f" {json_filename} Created: Success")
@@ -66,8 +66,7 @@ class DataExtract:
                         args.user, "netgroups", "netgroups.json"
                     )
                 if adhoc == "pk":
-                    DataExtract.extractor_function(
-                        args.user, "pubkeys", "pubkeys.json")
+                    DataExtract.extractor_function(args.user, "pubkeys", "pubkeys.json")
                 if adhoc == "ug":
                     DataExtract.extractor_function(
                         args.user, "users_groups", "usergroups.json"
@@ -87,8 +86,7 @@ class DataExtract:
                     DataExtract.extractor_function(
                         args.user, "netgroups", "netgroups.json"
                     )
-                    DataExtract.extractor_function(
-                        args.user, "pubkeys", "pubkeys.json")
+                    DataExtract.extractor_function(args.user, "pubkeys", "pubkeys.json")
                     DataExtract.extractor_function(
                         args.user, "users_groups", "usergroups.json"
                     )
