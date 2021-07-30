@@ -31,7 +31,6 @@ logger.addHandler(stream_handler)
 
 
 class ExecuteBot:
-
     def __init__(self, user):
         self.user = user
 
@@ -40,11 +39,9 @@ class ExecuteBot:
 
         path = "/dummyfs/%s" % self.user
 
-        files_list = os.listdir(path)
+        # This segment of code is for user groups related executions on requested server
 
-        if "usergroups.json" in files_list:
-
-            # This segment of code is for user groups related executions on requested server
+        try:
 
             with open(
                 os.path.join(path, "usergroups.json")
@@ -62,11 +59,15 @@ class ExecuteBot:
 
                     # Calling usergroup adding execution
                     Usergroup.only_usergroup_add(
-                        passwd_entry, group_entry, shadow_entry)
+                        passwd_entry, group_entry, shadow_entry
+                    )
 
-        if "netgroups.json" in files_list:
+        except Exception as e:
+            print(e)
 
-            # This segment of code is for netgroup related executions on requested server
+        # This segment of code is for netgroup related executions on requested server
+
+        try:
 
             with open(
                 os.path.join(path, "netgroups.json")
@@ -83,6 +84,9 @@ class ExecuteBot:
                     # Calling netgroup adding execution
                     Netgroup.netgroup_add(netgroup_name)
 
+        except Exception as e:
+            print(e)
+
         # This segment of code is for pubkeys related executions on requested server
 
         try:
@@ -98,8 +102,7 @@ class ExecuteBot:
                     ssh_key = json_loader[i]["ssh-key"]
 
                     Pubkey.authorized_keys(user_id, ssh_key)
-                    logger.info(
-                        " PUBKEY REQUEST FOR USER %s COMPLETED" % user_id)
+                    logger.info(" PUBKEY REQUEST FOR USER %s COMPLETED" % user_id)
 
         except Exception as e:
             print(e)
@@ -136,45 +139,74 @@ class ExecuteBot:
             # Filesystem.disk_scan()  # Calling Disk Scan Method
             logger.debug(" Scan Complete for disks")
 
-            percentage_used, filesystem_used, lv_vg_pv_used = Filesystem.lvm_full_scan_template()
+            (
+                percentage_used,
+                filesystem_used,
+                lv_vg_pv_used,
+            ) = Filesystem.lvm_full_scan_template()
 
             if filesystem_used:
 
-                mount_names = [json_loader[i]["Mountpoint"]
-                               for i in range(len(json_loader))
-                               if json_loader[i]["Server"] == os.uname()[1]]
-                filesystems_to_be_removed = [fs
-                                             for fs in filesystem_used
-                                             if fs not in mount_names]
+                mount_names = [
+                    json_loader[i]["Mountpoint"]
+                    for i in range(len(json_loader))
+                    if json_loader[i]["Server"] == os.uname()[1]
+                ]
+                filesystems_to_be_removed = [
+                    fs for fs in filesystem_used if fs not in mount_names
+                ]
 
-                filesystems_to_be_created = [mount_name
-                                             for mount_name in mount_names
-                                             if mount_name not in filesystem_used]
+                filesystems_to_be_created = [
+                    mount_name
+                    for mount_name in mount_names
+                    if mount_name not in filesystem_used
+                ]
                 if filesystems_to_be_removed:
-                    Filesystem.check_and_wipe_out_lvm(percentage_used, filesystems_to_be_removed, lv_vg_pv_used)
+                    Filesystem.check_and_wipe_out_lvm(
+                        percentage_used, filesystems_to_be_removed, lv_vg_pv_used
+                    )
 
                 elif filesystems_to_be_created:
                     for i in filesystems_to_be_created:
                         for j in json_loader:
-                            if j['Mountpoint'] == i:
+                            if j["Mountpoint"] == i:
                                 fs_type = j["Filesystem"]
                                 mount_name = j["Mountpoint"]
                                 mount_size = j["Size(only in G)"]
                                 mount_owner = j["Owner"]
                                 mount_group = j["Group"]
                                 mount_perm = j["Permission"]
-                                print(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm)
-                                Filesystem.lvm_operation(fs_type, mount_name, mount_size, mount_owner, mount_group,
-                                                         int(mount_perm))
+                                print(
+                                    fs_type,
+                                    mount_name,
+                                    mount_size,
+                                    mount_owner,
+                                    mount_group,
+                                    mount_perm,
+                                )
+                                Filesystem.lvm_operation(
+                                    fs_type,
+                                    mount_name,
+                                    mount_size,
+                                    mount_owner,
+                                    mount_group,
+                                    int(mount_perm),
+                                )
                 else:
-                    logger.info(" No filesystems are required to be removed as filesystems already exists")
+                    logger.info(
+                        " No filesystems are required to be removed as filesystems already exists"
+                    )
 
             elif lv_vg_pv_used:
                 for metadata in lv_vg_pv_used:
                     lv = metadata.split()[0]
                     vg = metadata.split()[1]
                     pv = metadata.split()[2]
-                    logger.warning("Have a check on existing PV = {}, VG = {} and LV = {}".format(pv, vg, lv))
+                    logger.warning(
+                        "Have a check on existing PV = {}, VG = {} and LV = {}".format(
+                            pv, vg, lv
+                        )
+                    )
 
             else:
                 for i in range(len(json_loader)):
@@ -186,12 +218,14 @@ class ExecuteBot:
                         mount_group = json_loader[i]["Group"]
                         mount_perm = json_loader[i]["Permission"]
                         # print(fs_type, mount_name, mount_size, mount_owner, mount_group, mount_perm)
-                        Filesystem.lvm_operation(fs_type,
-                                                 mount_name,
-                                                 mount_size,
-                                                 mount_owner,
-                                                 mount_group,
-                                                 int(mount_perm))
+                        Filesystem.lvm_operation(
+                            fs_type,
+                            mount_name,
+                            mount_size,
+                            mount_owner,
+                            mount_group,
+                            int(mount_perm),
+                        )
 
         except Exception as e:
             print(e)
@@ -214,8 +248,7 @@ class ExecuteBot:
                 if json_loader[i]["Server"] == os.uname()[1]:
                     cron_user_name = json_loader[i]["User account"]
 
-                    FileEdit.normal_append_mode(
-                        "/etc/cron.allow", cron_user_name)
+                    FileEdit.normal_append_mode("/etc/cron.allow", cron_user_name)
                     logger.info(
                         " %s USER HAS BEEN ALLOWED FOR CRONTAB EDIT" % cron_user_name
                     )
