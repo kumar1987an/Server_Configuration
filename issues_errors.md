@@ -1,4 +1,4 @@
-- Need to create backup script for rolling back everything
+- Need to create backup script for rolling back everything --> waiting for beta rollout
 - Need to work on /etc/yp.conf this contains ypservers which is not there in the excel
 - fine tune NFS share autofind with Filesystem name --< very important --< Completed
 - if there is no data in some tabs need to check how the script behaves --< in Progress
