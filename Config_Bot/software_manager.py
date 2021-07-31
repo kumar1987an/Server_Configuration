@@ -28,27 +28,26 @@ logger.addHandler(stream_handler)
 
 
 class SoftwareManager(object):
-
     @staticmethod
     def arch_check():
-        pass
+        for i, j in os.environ.items():
+            print(i + ":    " + j)
 
     @staticmethod
     def load_repo():
         pass
 
     @staticmethod
-    def install_software():
+    def install_software(software_name):
         pass
 
     @staticmethod
-    def deinstall_software():
+    def deinstall_software(software_name):
         pass
 
     @staticmethod
-    def installed_software_check():
+    def software_check(software_name):
         pass
 
-    @staticmethod
-    def deinstalled_software_check():
-        pass
+
+print(SoftwareManager.arch_check())
