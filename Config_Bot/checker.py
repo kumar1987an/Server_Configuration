@@ -32,4 +32,8 @@ class Duplicate(object):
 
     @staticmethod
     def file_checker(pattern, file):
-        check_for = re.compile(r"{}".format(pattern))
+        check_for = re.compile(r"{}?".format(pattern))
+        with open(file, "r") as check_file:
+            file_data = check_file.read()
+            pattern_check = re.search(check_for, file_data)
+            return pattern_check
