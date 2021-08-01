@@ -31,9 +31,28 @@ logger.addHandler(stream_handler)
 class Duplicate(object):
 
     @staticmethod
-    def file_checker(pattern, file):
-        check_for = re.compile(r"{}".format(pattern))
+    def single_pattern_file_checker(single_pattern, file):
+        check_for = re.compile(r"{}".format(single_pattern))
         with open(file, "r") as check_file:
             file_data = check_file.read()
             pattern_check = re.search(check_for, file_data)
-            return pattern_check
+            if pattern_check == None:
+                return 1  # Execute the Script
+            else:
+                return 0  # Don't Execute the Script
+
+    @staticmethod
+    def multi_pattern_file_checker(multi_pattern, file):
+        list_of_pattern_verified = []
+        for pattern in multi_pattern:
+            check_for = re.compile(r"{}".format(pattern))
+            with open(file, "r") as check_file:
+                file_data = check_file.read()
+                pattern_check = re.search(check_for, file_data)
+                if pattern_check == None:
+                    list_of_pattern_verified.append(True)  # Execute the Script
+                else:
+                    list_of_pattern_verified.append(
+                        False)  # Don't Execute the Script
+
+        return list_of_pattern_verified
