@@ -55,4 +55,7 @@ class Duplicate(object):
                     list_of_pattern_verified.append(
                         False)  # Don't Execute the Script
 
-        return list_of_pattern_verified
+        if all(list_of_pattern_verified):
+            return 1  # Execute the Script
+        else:
+            return 0  # Don't Execute the Script
