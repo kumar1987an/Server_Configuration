@@ -41,7 +41,10 @@ class Netgroup(object):
         else:
             logger.warning("Netgroup Entry already there in the group file")
 
-        if Duplicate.multi_pattern_file_checker(["passwd.*files.*nis", "group.*files.*nis", "shadow.*compat", "netgroup.*files.*nis"], "/etc/nsswitch.conf") == 1:
+        if Duplicate.multi_pattern_file_checker(["passwd.*files.*nis",
+                                                "group.*files.*nis",
+                                                 "shadow.*compat",
+                                                 "netgroup.*files.*nis"], "/etc/nsswitch.conf") == 1:
             search_patterns = [
                 "passwd:.+",
                 "group:.+",
@@ -62,6 +65,9 @@ class Netgroup(object):
                                "/etc/nsswitch.conf")
             logger.info(" %s NETGROUP REQUEST COMPLETED" %
                         netgroup_name)
+        else:
+            logger.warning(
+                "nsswitch.conf file doesnt required a config update")
 
     @staticmethod
     def backupfile():
