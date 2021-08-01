@@ -18,6 +18,8 @@ from pubkey_manager import Pubkey
 from filesystem_manager import Filesystem
 from usergroup_manager import Usergroup
 from netgroup_manager import Netgroup
+from cronuser_manager import Cron
+from software_manager import SoftwareManager
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -102,7 +104,8 @@ class ExecuteBot:
                     ssh_key = json_loader[i]["ssh-key"]
 
                     Pubkey.authorized_keys(user_id, ssh_key)
-                    logger.info(" PUBKEY REQUEST FOR USER %s COMPLETED" % user_id)
+                    logger.info(
+                        " PUBKEY REQUEST FOR USER %s COMPLETED" % user_id)
 
         except Exception as e:
             print(e)
@@ -247,11 +250,7 @@ class ExecuteBot:
             for i in range(len(json_loader)):
                 if json_loader[i]["Server"] == os.uname()[1]:
                     cron_user_name = json_loader[i]["User account"]
-
-                    FileEdit.normal_append_mode("/etc/cron.allow", cron_user_name)
-                    logger.info(
-                        " %s USER HAS BEEN ALLOWED FOR CRONTAB EDIT" % cron_user_name
-                    )
+                    Cron.cron_useradd(cron_user_name)
 
         except Exception as e:
             print(e)
