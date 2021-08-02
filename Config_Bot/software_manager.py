@@ -10,6 +10,7 @@
 
 import os
 import logging
+import platform
 from subprocess import PIPE, call, Popen
 
 # Importing required libraries
@@ -30,12 +31,15 @@ logger.addHandler(stream_handler)
 class SoftwareManager(object):
     @staticmethod
     def arch_check():
-        for i, j in os.environ.items():
-            print(i + ":    " + j)
+        kernel = platform.uname()[2]
+        system_flavor, system_version = platform.platform().split(
+            "-")[5], platform.platform().split("-")[6]
+        return kernel, system_flavor, system_version
 
     @staticmethod
     def load_repo():
-        pass
+        kernel, system_flavor, system_version = SoftwareManager.arch_check()
+        return (kernel, system_version, system_flavor)
 
     @staticmethod
     def install_software(software_name):
@@ -50,4 +54,4 @@ class SoftwareManager(object):
         pass
 
 
-print(SoftwareManager.arch_check())
+print(SoftwareManager.load_repo())
