@@ -1,3 +1,5 @@
+# Issues and Mitigations
+
 - Need to create backup script for rolling back everything --> waiting for beta rollout
 - Need to work on /etc/yp.conf this contains ypservers which is not there in the excel
 - fine tune NFS share autofind with Filesystem name --< very important --< Completed
