@@ -39,7 +39,7 @@ class SoftwareManager(object):
     @staticmethod
     def load_repo():
         kernel, system_flavor, system_version = SoftwareManager.arch_check()
-        return (kernel, system_version, system_flavor)
+        return kernel, system_version, system_flavor
 
     @staticmethod
     def install_software(software_name):
