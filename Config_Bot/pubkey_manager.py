@@ -52,7 +52,7 @@ class Pubkey(object):
         if Pubkey.path_finder(user) == 0:
             path = "/SSH_Keys/{}".format(user)
             authorized_file = os.path.join(path, "authorized_keys2")
-            Filecopy.backup("{}".format(authorized_file), Type="secured")
+            Filecopy.backup("{}".format(authorized_file), type_of_bkp="secured")
             try:
                 with open(authorized_file, "a") as key_file:
                     key_file.write("{}\n".format(pub_key))

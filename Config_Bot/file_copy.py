@@ -27,7 +27,7 @@ logger.addHandler(stream_handler)
 class Filecopy(object):
 
     @staticmethod
-    def backup(file_name, for_what_backup, type_of_bkp="normal"):
+    def backup(file_name, for_what_backup="backup", type_of_bkp="normal"):
         """Function definition: To backup of a file"""
 
         current_time = for_what_backup + dt.now().strftime("%d-%m-%y_%H:%M:%S")

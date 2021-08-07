@@ -73,7 +73,7 @@ class Netgroup(object):
     def backupfile():
         # For Copying required file for Netgroup change related operations
         logger.info(" ---------- File backup started ----------")
-        Filecopy.backup("/etc/passwd")
-        Filecopy.backup("/etc/nsswitch.conf")
-        Filecopy.backup("/etc/group")
+        Filecopy.backup("/etc/passwd", for_what_backup="netgroup")
+        Filecopy.backup("/etc/nsswitch.conf", for_what_backup="netgroup")
+        Filecopy.backup("/etc/group", for_what_backup="netgroup")
         logger.info(" ---------- File backup Completed ----------")

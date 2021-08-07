@@ -75,7 +75,7 @@ class Usergroup(object):
     def backupfile():
         # For Copying required file for User/Group change related operations
         logger.info(" ---------- File backup started ----------")
-        Filecopy.backup("/etc/passwd")
-        Filecopy.backup("/etc/group")
-        Filecopy.backup("/etc/shadow", Type="secured")
+        Filecopy.backup("/etc/passwd", for_what_backup="usergroup")
+        Filecopy.backup("/etc/group", for_what_backup="usergroup")
+        Filecopy.backup("/etc/shadow", type_of_bkp="secured")
         logger.info(" ---------- File backup Completed ----------")
