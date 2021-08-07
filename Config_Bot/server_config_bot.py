@@ -13,7 +13,6 @@ import os
 
 # Other files importing
 from file_copy import Filecopy
-from file_edit import FileEdit
 from pubkey_manager import Pubkey
 from filesystem_manager import Filesystem
 from usergroup_manager import Usergroup
