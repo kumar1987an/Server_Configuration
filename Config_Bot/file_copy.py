@@ -27,16 +27,16 @@ logger.addHandler(stream_handler)
 class Filecopy(object):
 
     @staticmethod
-    def backup(file, Type="normal"):
-        """Function definiton: To backup of a file"""
+    def backup(file_name, for_what_backup, type_of_bkp="normal"):
+        """Function definition: To backup of a file"""
 
-        current_time = dt.now().strftime("%d-%m-%y_%H:%M:%S")
+        current_time = for_what_backup + dt.now().strftime("%d-%m-%y_%H:%M:%S")
 
-        new_file_name = "".join((file + "_", current_time))
+        new_file_name = "".join((file_name + "_", current_time))
 
-        if Type == "normal":
+        if type_of_bkp == "normal":
             Popen(
-                "cp -p {} {}".format(file, new_file_name).split(),
+                "cp -p {} {}".format(file_name, new_file_name).split(),
                 stdout=PIPE,
                 stderr=PIPE,
             )
@@ -44,21 +44,21 @@ class Filecopy(object):
                 " Primary backup file created -> {}".format(new_file_name))
             Popen(
                 "cp -p {} /tmp/{}".format(file,
-                                          os.path.basename(file)).split(),
+                                          os.path.basename(file_name)).split(),
                 stdout=PIPE,
                 stderr=PIPE,
             )
             logger.info(" Secondary backup file created -> /tmp/{}".format(
-                os.path.basename(file))
+                os.path.basename(file_name))
             )
-        elif Type == "secured":
+        elif type_of_bkp == "secured":
             Popen(
-                "cp -p {} {}".format(file, new_file_name).split(),
+                "cp -p {} {}".format(file_name, new_file_name).split(),
                 stdout=PIPE,
                 stderr=PIPE,
             )
             logger.info(
-                " Primary backup file for {} created and new file name secured".format(os.path.basename(file)))
+                " Primary backup file for {} created and new file name secured".format(os.path.basename(file_name)))
 
     @ staticmethod
     def copy_file(source_file, target_file):
