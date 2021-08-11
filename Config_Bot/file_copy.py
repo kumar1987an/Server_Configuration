@@ -43,7 +43,7 @@ class Filecopy(object):
             logger.info(
                 " Primary backup file created -> {}".format(new_file_name))
             Popen(
-                "cp -p {} /tmp/{}".format(file,
+                "cp -p {} /tmp/{}".format(file_name,
                                           os.path.basename(file_name)).split(),
                 stdout=PIPE,
                 stderr=PIPE,
@@ -57,8 +57,8 @@ class Filecopy(object):
                 stdout=PIPE,
                 stderr=PIPE,
             )
-            logger.info(
-                " Primary backup file for {} created and new file name secured".format(os.path.basename(file_name)))
+            logger.info(" Primary backup file for {} created and new \
+                        file name secured".format(os.path.basename(file_name)))
 
     @ staticmethod
     def copy_file(source_file, target_file):

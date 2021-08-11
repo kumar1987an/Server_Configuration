@@ -8,10 +8,10 @@
     First Parent Codename:  main.py
 """
 
-import os
+# import os
 import logging
 import re
-from subprocess import PIPE, call, Popen
+# from subprocess import PIPE, call, Popen
 
 # Importing required libraries
 
@@ -36,7 +36,7 @@ class Duplicate(object):
         with open(file, "r") as check_file:
             file_data = check_file.read()
             pattern_check = re.search(check_for, file_data)
-            if pattern_check == None:
+            if pattern_check is None:
                 return 1  # Execute the Script
             else:
                 return 0  # Don't Execute the Script
@@ -49,7 +49,7 @@ class Duplicate(object):
             with open(file, "r") as check_file:
                 file_data = check_file.read()
                 pattern_check = re.search(check_for, file_data)
-                if pattern_check == None:
+                if pattern_check is None:
                     list_of_pattern_verified.append(True)  # Execute the Script
                 else:
                     list_of_pattern_verified.append(
