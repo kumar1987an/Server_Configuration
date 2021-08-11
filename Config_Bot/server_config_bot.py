@@ -18,7 +18,7 @@ from filesystem_manager import Filesystem
 from usergroup_manager import Usergroup
 from netgroup_manager import Netgroup
 from cronuser_manager import Cron
-from software_manager import SoftwareManager
+# from software_manager import SoftwareManager
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
