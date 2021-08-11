@@ -30,7 +30,7 @@ class Filecopy(object):
     def backup(file_name, for_what_backup="backup", type_of_bkp="normal"):
         """Function definition: To backup of a file"""
 
-        current_time = for_what_backup + dt.now().strftime("%d-%m-%y_%H:%M:%S")
+        current_time = for_what_backup + "_" + dt.now().strftime("%d-%m-%y_%H:%M:%S")
 
         new_file_name = "".join((file_name + "_", current_time))
 
