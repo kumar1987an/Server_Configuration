@@ -1,0 +1,2 @@
+class RollbackBot:
+    pass
