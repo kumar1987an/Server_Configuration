@@ -33,14 +33,12 @@ class FileEdit(object):
         if os.path.basename(file_name) == "passwd":
             with open(file_name, "a") as a_file:
                 a_file.writelines("+@{}:x:::::\n".format(data))
-            logger.info(" '%s' --> appended to the file_name %s" %
-                        (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
 
         elif os.path.basename(file_name) == "group":
             with open(file_name, "a") as a_file:
                 a_file.writelines("+:::\n")
-            logger.info(" '%s' --> appended to the file_name %s" %
-                        (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
 
     @staticmethod
     def normal_append_mode(file_name, data):
@@ -48,20 +46,17 @@ class FileEdit(object):
         if os.path.basename(file_name) == "passwd":
             with open(file_name, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
-            logger.info(" '%s' --> appended to the file_name %s" %
-                        (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
 
         elif os.path.basename(file_name) == "group":
             with open(file_name, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
-            logger.info(" '%s' --> appended to the file_name %s" %
-                        (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
 
         elif os.path.basename(file_name) == "cron.allow":
             with open(file_name, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
-            logger.info(" '%s' --> appended to the file_name %s" %
-                        (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
 
         elif os.path.basename(file_name) == "shadow":
             with open(file_name, "a") as a_file:
@@ -71,7 +66,8 @@ class FileEdit(object):
             with open(file_name, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
             logger.info(
-                ("Given data has been appended to the file name {}".format(file_name)))
+                ("Given data has been appended to the file name {}".format(file_name))
+            )
 
     @staticmethod
     def find_replace(file_name, search_pattern, replace_pattern):
@@ -91,8 +87,7 @@ class FileEdit(object):
                     output_content = re.sub(s_pattern, r_pattern, content)
 
                 elif s_pattern == "shadow:.+":
-                    output_content = re.sub(
-                        s_pattern, r_pattern, content, count=1)
+                    output_content = re.sub(s_pattern, r_pattern, content, count=1)
 
                 else:
                     output_content = re.sub(s_pattern, r_pattern, content)
@@ -101,7 +96,8 @@ class FileEdit(object):
                         out_file.write(output_content)
                     logger.info(
                         " Given {} are matched and replaced over the temp file_name {}".format(
-                            s_pattern, file_name)
+                            s_pattern, file_name
+                        )
                     )
 
                 except Exception as e:
@@ -116,7 +112,7 @@ class FileEdit(object):
 
     @staticmethod
     def append_lineaware_mode(file_name, data, position="up"):
-        """ Appending data exactly above """
+        """Appending data exactly above"""
 
         if file_name == "/etc/shadow":
             FileEdit.normal_append_mode(file_name, data)
@@ -135,25 +131,25 @@ class FileEdit(object):
                         line_number = line_number + str(i)
                         break
                     elif position == "down":
-                        line_number = line_number + str(i+1)
+                        line_number = line_number + str(i + 1)
                         break
 
             # appending the content one line above of given search pattern
-            content.insert(int(line_number),
-                           "{}\n".format(data))
+            content.insert(int(line_number), "{}\n".format(data))
 
             if file_name == "/etc/passwd":
                 dir_name = data.split(":")[5]
                 try:
                     with open(file_name, "w") as write_file:
                         write_file.writelines(content)
-                    logger.info(
-                        " User data has been appened to {}".format(file_name))
+                    logger.info(" User data has been appened to {}".format(file_name))
                     logger.warning(
-                        " Tyring to create Home directory {}".format(dir_name))
+                        " Tyring to create Home directory {}".format(dir_name)
+                    )
                     os.makedirs(dir_name)
                     logger.info(
-                        "{} Home directory created successfully".format(dir_name))
+                        "{} Home directory created successfully".format(dir_name)
+                    )
 
                 except Exception as e:
                     logger.warning(e)
@@ -162,8 +158,7 @@ class FileEdit(object):
                 try:
                     with open(file_name, "w") as write_file:
                         write_file.writelines(content)
-                    logger.info(
-                        " Group data has been appended to {}".format(file_name))
+                    logger.info(" Group data has been appended to {}".format(file_name))
 
                 except Exception as e:
                     logger.warning(e)
