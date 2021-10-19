@@ -14,7 +14,7 @@ import logging
 from argparse import ArgumentParser
 
 # from os import access
-from rollback_config import RollbackBot
+from rollback_config import RollBackBot
 
 
 logger = logging.getLogger(__name__)
@@ -44,5 +44,5 @@ def app():
 
 if __name__ == "__main__":
     argument_extracted = app()
-    switch_on = RollbackBot(argument_extracted)
+    switch_on = RollBackBot(argument_extracted)
     switch_on.execute()

@@ -22,3 +22,9 @@ stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 
 logger.addHandler(stream_handler)
+
+
+class RollBackBot:
+    @staticmethod
+    def execute():
+        pass
