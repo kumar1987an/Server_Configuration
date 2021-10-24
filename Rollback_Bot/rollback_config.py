@@ -25,17 +25,18 @@ LOGGER.addHandler(STREAM_HANDLER)
 
 
 class RollBackBot:
+    """ RollBackBot class"""
 
-    def __init__(self, user, rollback_type):
+    def __init__(self, user, adhoc):
         self.user = user
-        self.rollback_type = rollback_type
+        self.adhoc = adhoc
 
     def execute(self):
         """A Bot to perform server configuration with json input"""
 
         path = "/dummyfs/%s" % self.user
 
-        if self.rollback_type in ["fs", "FS"]:
+        if self.adhoc in ["fs", "FS"]:
             json_file_path = os.path.join(path, "filesystems.json")
             with open(json_file_path, "r") as json_file:
                 print(json_file.read())

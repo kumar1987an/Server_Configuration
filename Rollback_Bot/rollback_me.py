@@ -37,12 +37,24 @@ def app():
         required=True,
         help="Enter the username for location to save the jsons",
     )
+    help_doc = """Adhoc requests are fs, ng, ug, sw, cr, pk and all -->
+                  fs = filesystems, ng = netgroups,
+                  ug = users_groups, sw = softwares,
+                  cr = cronusers, pk = pubkeys,
+                  all = all categories
+               """
+    parser.add_argument("--adhoc",
+                        type=str,
+                        required=True,
+                        help=help_doc,
+                        nargs="+")
 
     arg = parser.parse_args()
-    return arg.__dict__.get("user")
+    return arg.__dict__.get("user"), arg.__dict__.get("adhoc")
 
 
 if __name__ == "__main__":
-    argument_extracted = app()
-    switch_on = RollBackBot(argument_extracted)
-    switch_on.execute()
+    ARGUMENT_EXTRACTED = app()
+    print(ARGUMENT_EXTRACTED)
+    # SWITCH_ON = RollBackBot(ARGUMENT_EXTRACTED)
+    # SWITCH_ON.execute()
