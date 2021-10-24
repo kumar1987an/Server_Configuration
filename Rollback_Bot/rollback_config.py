@@ -13,18 +13,29 @@ import os
 
 # Other files importing
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter("%(levelname)s:%(asctime)s:%(name)s:%(message)s")
+FORMATTER = logging.Formatter("%(levelname)s:%(asctime)s:%(name)s:%(message)s")
 
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
+STREAM_HANDLER = logging.StreamHandler()
+STREAM_HANDLER.setFormatter(FORMATTER)
 
-logger.addHandler(stream_handler)
+LOGGER.addHandler(STREAM_HANDLER)
 
 
 class RollBackBot:
-    @staticmethod
-    def execute():
-        pass
+
+    def __init__(self, user, rollback_type):
+        self.user = user
+        self.rollback_type = rollback_type
+
+    def execute(self):
+        """A Bot to perform server configuration with json input"""
+
+        path = "/dummyfs/%s" % self.user
+
+        if self.rollback_type in ["fs", "FS"]:
+            json_file_path = os.path.join(path, "filesystems.json")
+            with open(json_file_path, "r") as json_file:
+                print(json_file.read())
