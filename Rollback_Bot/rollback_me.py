@@ -54,7 +54,7 @@ def app():
 
 
 if __name__ == "__main__":
-    ARGUMENT_EXTRACTED = app()
-    print(ARGUMENT_EXTRACTED)
-    # SWITCH_ON = RollBackBot(ARGUMENT_EXTRACTED)
-    # SWITCH_ON.execute()
+    USER, ROLLBACK_CONFIG = app()
+    # print(ARGUMENT_EXTRACTED)
+    SWITCH_ON = RollBackBot(USER, ROLLBACK_CONFIG)
+    SWITCH_ON.execute()
