@@ -39,4 +39,15 @@ class RollBackBot:
             if adhoc == "fs":
                 json_file_path = os.path.join(path, "filesystems.json")
                 with open(json_file_path, "r") as json_file:
-                    print(json_file.read())
+                    json_loader = json.loads(json_file.read())
+                    for data in json_loader:
+                        if data['Server'] == os.uname()[1]:
+                            print(data)
+
+            if adhoc == "ug":
+                json_file_path = os.path.join(path, "usergroups.json")
+                with open(json_file_path, "r") as json_file:
+                    json_loader = json.loads(json_file.read())
+                    for data in json_loader:
+                        if data['Server'] == os.uname()[1]:
+                            print(data)
