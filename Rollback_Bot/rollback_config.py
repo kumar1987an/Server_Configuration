@@ -51,3 +51,35 @@ class RollBackBot:
                     for data in json_loader:
                         if data['Server'] == os.uname()[1]:
                             print(data)
+
+            if adhoc == "pk":
+                json_file_path = os.path.join(path, "pubkeys.json")
+                with open(json_file_path, "r") as json_file:
+                    json_loader = json.loads(json_file.read())
+                    for data in json_loader:
+                        if data['Server'] == os.uname()[1]:
+                            print(data)
+
+            if adhoc == "ng":
+                json_file_path = os.path.join(path, "netgroups.json")
+                with open(json_file_path, "r") as json_file:
+                    json_loader = json.loads(json_file.read())
+                    for data in json_loader:
+                        if data['Server'] == os.uname()[1]:
+                            print(data)
+
+            if adhoc == "sw":
+                json_file_path = os.path.join(path, "softwares.json")
+                with open(json_file_path, "r") as json_file:
+                    json_loader = json.loads(json_file.read())
+                    for data in json_loader:
+                        if data['Server'] == os.uname()[1]:
+                            print(data)
+
+            if adhoc == "cr":
+                json_file_path = os.path.join(path, "cronusers.json")
+                with open(json_file_path, "r") as json_file:
+                    json_loader = json.loads(json_file.read())
+                    for data in json_loader:
+                        if data['Server'] == os.uname()[1]:
+                            print(data)
