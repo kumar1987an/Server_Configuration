@@ -33,12 +33,14 @@ class FileEdit(object):
         if os.path.basename(file_name) == "passwd":
             with open(file_name, "a") as a_file:
                 a_file.writelines("+@{}:x:::::\n".format(data))
-            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s" %
+                        (data, file_name))
 
         elif os.path.basename(file_name) == "group":
             with open(file_name, "a") as a_file:
                 a_file.writelines("+:::\n")
-            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s" %
+                        (data, file_name))
 
     @staticmethod
     def normal_append_mode(file_name, data):
@@ -46,17 +48,20 @@ class FileEdit(object):
         if os.path.basename(file_name) == "passwd":
             with open(file_name, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
-            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
+            logger.info(
+                "Given user has been appended to the file_name %s", file_name)
 
         elif os.path.basename(file_name) == "group":
             with open(file_name, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
-            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
+            logger.info(
+                "Given group has been appended to the file_name %s", file_name)
 
         elif os.path.basename(file_name) == "cron.allow":
             with open(file_name, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
-            logger.info(" '%s' --> appended to the file_name %s" % (data, file_name))
+            logger.info(" '%s' --> appended to the file_name %s",
+                        data, file_name)
 
         elif os.path.basename(file_name) == "shadow":
             with open(file_name, "a") as a_file:
@@ -66,10 +71,9 @@ class FileEdit(object):
             with open(file_name, "a") as a_file:
                 a_file.writelines("{}\n".format(data))
             logger.info(
-                ("Given data has been appended to the file name {}".format(file_name))
-            )
+                "Given data has been appended to the file name %s", file_name)
 
-    @staticmethod
+    @ staticmethod
     def find_replace(file_name, search_pattern, replace_pattern):
         """Function definition: for find and replace data to a file_name"""
 
@@ -87,7 +91,8 @@ class FileEdit(object):
                     output_content = re.sub(s_pattern, r_pattern, content)
 
                 elif s_pattern == "shadow:.+":
-                    output_content = re.sub(s_pattern, r_pattern, content, count=1)
+                    output_content = re.sub(
+                        s_pattern, r_pattern, content, count=1)
 
                 else:
                     output_content = re.sub(s_pattern, r_pattern, content)
@@ -95,10 +100,7 @@ class FileEdit(object):
                     with open(file_name, "w") as out_file:
                         out_file.write(output_content)
                     logger.info(
-                        " Given {} are matched and replaced over the temp file_name {}".format(
-                            s_pattern, file_name
-                        )
-                    )
+                        " Given %s are matched and replaced over the temp file_name %s", s_pattern, file_name)
 
                 except Exception as e:
                     logger.critical(e)
@@ -142,13 +144,15 @@ class FileEdit(object):
                 try:
                     with open(file_name, "w") as write_file:
                         write_file.writelines(content)
-                    logger.info(" User data has been appened to {}".format(file_name))
+                    logger.info(
+                        " User data has been appened to {}".format(file_name))
                     logger.warning(
                         " Tyring to create Home directory {}".format(dir_name)
                     )
                     os.makedirs(dir_name)
                     logger.info(
-                        "{} Home directory created successfully".format(dir_name)
+                        "{} Home directory created successfully".format(
+                            dir_name)
                     )
 
                 except Exception as e:
@@ -158,7 +162,8 @@ class FileEdit(object):
                 try:
                     with open(file_name, "w") as write_file:
                         write_file.writelines(content)
-                    logger.info(" Group data has been appended to {}".format(file_name))
+                    logger.info(
+                        " Group data has been appended to {}".format(file_name))
 
                 except Exception as e:
                     logger.warning(e)

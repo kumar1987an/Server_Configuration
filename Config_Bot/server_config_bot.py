@@ -20,15 +20,15 @@ from netgroup_manager import Netgroup
 from cronuser_manager import Cron
 # from software_manager import SoftwareManager
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter("%(levelname)s:%(asctime)s:%(name)s:%(message)s")
+FORMATTER = logging.Formatter("%(levelname)s:%(asctime)s:%(name)s:%(message)s")
 
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
+STREAM_HANDLER = logging.StreamHandler()
+STREAM_HANDLER.setFormatter(FORMATTER)
 
-logger.addHandler(stream_handler)
+LOGGER.addHandler(STREAM_HANDLER)
 
 
 class ExecuteBot:
@@ -103,8 +103,8 @@ class ExecuteBot:
                     ssh_key = json_loader[i]["ssh-key"]
 
                     Pubkey.authorized_keys(user_id, ssh_key)
-                    logger.info(
-                        " PUBKEY REQUEST FOR USER %s COMPLETED" % user_id)
+                    LOGGER.info(
+                        " PUBKEY REQUEST FOR USER %s COMPLETED", user_id)
 
         except Exception as e:
             print(e)
@@ -133,13 +133,13 @@ class ExecuteBot:
                 json_loader = json.loads(json_file.read())
 
             # For taking backup file related to LVM
-            logger.info(" ---------- File backup started ----------")
+            LOGGER.info(" ---------- File backup started ----------")
             Filecopy.backup("/etc/fstab")
-            logger.info(" ---------- File backup Completed ----------")
+            LOGGER.info(" ---------- File backup Completed ----------")
 
-            logger.debug(" Scanning for newly added disks")
+            LOGGER.debug(" Scanning for newly added disks")
             # Filesystem.disk_scan()  # Calling Disk Scan Method
-            logger.debug(" Scan Complete for disks")
+            LOGGER.debug(" Scan Complete for disks")
 
             (
                 percentage_used,
@@ -195,7 +195,7 @@ class ExecuteBot:
                                     int(mount_perm),
                                 )
                 else:
-                    logger.info(
+                    LOGGER.info(
                         " No filesystems are required to be removed as filesystems already exists"
                     )
 
@@ -204,11 +204,8 @@ class ExecuteBot:
                     lv = metadata.split()[0]
                     vg = metadata.split()[1]
                     pv = metadata.split()[2]
-                    logger.warning(
-                        "Have a check on existing PV = {}, VG = {} and LV = {}".format(
-                            pv, vg, lv
-                        )
-                    )
+                    LOGGER.warning(
+                        "Have a check on existing PV = %s, VG = %s and LV = %s", pv, vg, lv)
 
             else:
                 for i in range(len(json_loader)):
@@ -242,9 +239,9 @@ class ExecuteBot:
                 json_loader = json.loads(json_file.read())
 
             # For Copying required file for Netgroup change related operations
-            logger.info(" ---------- File backup started ----------")
+            LOGGER.info(" ---------- File backup started ----------")
             Filecopy.backup("/etc/cron.allow")
-            logger.info(" ---------- File backup Completed ----------")
+            LOGGER.info(" ---------- File backup Completed ----------")
 
             for i in range(len(json_loader)):
                 if json_loader[i]["Server"] == os.uname()[1]:

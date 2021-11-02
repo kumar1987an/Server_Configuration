@@ -1,27 +1,28 @@
-""" 
+"""
     Codename: do_main.py
 
-    Author: Kumaran Ramalingam 
+    Author: Kumaran Ramalingam
 
-    Description: This Bot act as a main program to call Server configuration Bot with various functionalities
+    Description: This Bot act as a main program to call Server
+    configuration Bot with various functionalities
 """
 
 # Importing Libraries
 
-from os import access
-from server_config_bot import ExecuteBot
 from argparse import ArgumentParser
 import logging
+from server_config_bot import ExecuteBot
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter("%(levelname)s:%(asctime)s:%(name)s:%(message)s")
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
 
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
+FORMATTER = logging.Formatter("%(levelname)s:%(asctime)s:%(name)s:%(message)s")
 
-logger.addHandler(stream_handler)
+STREAM_HANDLER = logging.StreamHandler()
+STREAM_HANDLER.setFormatter(FORMATTER)
+
+LOGGER.addHandler(STREAM_HANDLER)
 
 
 def app():
@@ -39,6 +40,6 @@ def app():
 
 
 if __name__ == "__main__":
-    argument_extracted = app()
-    switch_on = ExecuteBot(argument_extracted)
-    switch_on.execute()
+    ARGUMENT_EXTRACTOR = app()
+    SWITCH_ON = ExecuteBot(ARGUMENT_EXTRACTOR)
+    SWITCH_ON.execute()

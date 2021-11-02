@@ -66,7 +66,9 @@ class DataExtract:
                         args.user, "netgroups", "netgroups.json"
                     )
                 if adhoc == "pk":
-                    DataExtract.extractor_function(args.user, "pubkeys", "pubkeys.json")
+                    DataExtract.extractor_function(
+                        args.user, "pubkeys", "pubkeys.json")
+
                 if adhoc == "ug":
                     DataExtract.extractor_function(
                         args.user, "users_groups", "usergroups.json"
@@ -86,7 +88,8 @@ class DataExtract:
                     DataExtract.extractor_function(
                         args.user, "netgroups", "netgroups.json"
                     )
-                    DataExtract.extractor_function(args.user, "pubkeys", "pubkeys.json")
+                    DataExtract.extractor_function(
+                        args.user, "pubkeys", "pubkeys.json")
                     DataExtract.extractor_function(
                         args.user, "users_groups", "usergroups.json"
                     )
