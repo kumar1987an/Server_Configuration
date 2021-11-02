@@ -73,7 +73,7 @@ class Usergroup(object):
 
     @staticmethod
     def backupfile():
-        # For Copying required file for User/Group change related operations
+        """ For Copying required file for User/Group change related operations """
         logger.info(" ---------- File backup started ----------")
         Filecopy.backup("/etc/passwd", for_what_backup="usergroup")
         Filecopy.backup("/etc/group", for_what_backup="usergroup")
